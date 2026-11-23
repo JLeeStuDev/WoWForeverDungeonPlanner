@@ -132,6 +132,41 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
   .row { grid-template-columns: 28px 26px minmax(0, 1fr); }
   .row .trackbox, .row .status { grid-column: 2 / -1; }
 }
+.dbtn { font: 500 12px var(--font-body); border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 3px 8px; cursor: pointer; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.dbtn:hover { border-color: var(--accent); }
+.dbtn[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.details { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 2px; }
+@media (max-width: 820px) { .details { grid-template-columns: 1fr; } }
+.details h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.details h4 small { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.wing { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: start; margin-bottom: 10px; }
+.wing-name { font: 600 12px var(--font-body); color: var(--accent); padding-top: 6px; }
+.stops { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; align-items: stretch; }
+.stops li { display: flex; align-items: center; gap: 4px; }
+.stops li + li::before { content: "→"; color: var(--muted); font-size: 12px; margin-right: 2px; }
+.stop { display: inline-grid; grid-template-columns: auto auto; column-gap: 6px; align-items: center; border: 1px solid var(--line); background: var(--bg); border-radius: 7px; padding: 4px 8px; font-size: 12.5px; max-width: 220px; }
+.stop .sn { font-weight: 600; }
+.stop .si { font: 500 11px var(--font-mono); color: var(--panel); background: var(--range); border-radius: 50%; width: 18px; height: 18px; display: inline-grid; place-items: center; grid-row: span 2; }
+.stop .sd { grid-column: 2; font-size: 11px; color: var(--muted); }
+.stop.entry { border-style: dashed; color: var(--muted); }
+.stop.entry .si { background: var(--muted); }
+.stop.final { border-color: var(--accent); background: var(--accent-soft); }
+.stop.final .si { background: var(--accent); }
+.stop.opt { border-style: dashed; }
+.stop.rare { border-style: dotted; font-style: italic; }
+.stop.rare .si { background: var(--muted); }
+.stop.out .si { background: var(--warn); }
+.qb { font: 600 10.5px var(--font-body); background: var(--ok-soft); color: var(--ok); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+.rlegend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.quests { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.quests li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; align-items: start; }
+.quests input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--ok); cursor: pointer; }
+.quests .qn { font-weight: 600; font-size: 13.5px; }
+.quests .qg { font-size: 12px; color: var(--muted); }
+.quests li.qdone .qn { text-decoration: line-through; color: var(--muted); }
+.qtag { font-size: 10.5px; font-weight: 600; padding: 0 5px; border-radius: 4px; margin-left: 5px; background: var(--track); color: var(--muted); vertical-align: 1px; }
+.qtag.in { background: var(--info-soft); color: var(--info); }
+.dnote { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
 .foot { font-size: 12.5px; color: var(--muted); max-width: 80ch; }
 .foot p { margin: 4px 0; }
 @media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
@@ -186,6 +221,7 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
     <div style="display:flex;gap:14px;flex-wrap:wrap">
       <label for="hide-done"><input type="checkbox" id="hide-done"> Hide cleared</label>
       <label for="show-other"><input type="checkbox" id="show-other"> Show other faction's dungeons</label>
+      <button type="button" class="btn" id="toggle-all">Show all routes</button>
       <button type="button" class="btn" id="reset-done">Uncheck all</button>
     </div>
   </section>
@@ -195,10 +231,334 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
   <footer class="foot">
     <p><strong>How status works.</strong> No one gets kill XP from an enemy when anyone in the party is 13 or more levels above it (Blizzard hotfix, Nov 14 2026). Gray uses the Classic formula against your highest member. "Underleveled" means someone is more than 4 levels below the best level.</p>
     <p><strong>Data.</strong> For the 9 new dungeons, enemy ranges are Blizzard's announced ranges plus recorded boss levels. For the original 20, enemy levels are the original Classic values; Forever has changed these dungeons, so treat them as ±1–2. Best level = a few levels above the lowest enemy, so trash stays green while the last bosses are still beatable.</p>
-    <p>Your party and checkmarks are saved in this browser only.</p>
+    <p><strong>Routes and quests.</strong> Routes are boss-order schematics, not to-scale maps; wings are drawn as separate lines. For the new dungeons they come from community guides (Method, Warcraft Tavern, Frostyboost, gfinity), and Blackmaw Hold's order is still unconfirmed. Original-dungeon routes and quests are the Classic versions; Forever reworked dungeon quests, so expect some additions or name changes. Quests shown follow the faction you picked.</p>
+    <p>Your party, cleared dungeons and quest checkmarks are saved in this browser only.</p>
   </footer>
 </div>
 
+<script>
+// Route schematics and quest lists. Stop: [name, flags, note]. flags: f=final, o=optional, r=rare, e=event/summoned, x=outside the instance.
+// Quest: n=name, f=A|H|B, g=giver/start, o=objective, b=boss it needs, i=starts inside.
+const EXTRA = {
+  rfc: { src: "classic", route: [{ stops: [["Oggleflint"], ["Taragaman the Hungerer"], ["Jergosh the Invoker"], ["Bazzalan", "f"]] }],
+    quests: [
+      { n: "Testing an Enemy's Strength", f: "H", g: "Rahauro, Thunder Bluff", o: "Kill Ragefire troggs and shamans" },
+      { n: "Searching for the Lost Satchel", f: "H", g: "Rahauro, Thunder Bluff", o: "Find Maur Grimtotem's satchel" },
+      { n: "Hidden Enemies", f: "H", g: "Thrall, Orgrimmar", o: "Kill Bazzalan and Jergosh", b: "Bazzalan" },
+      { n: "Slaying the Beast", f: "H", g: "Neeru Fireblade, Orgrimmar", o: "Taragaman's heart", b: "Taragaman the Hungerer" },
+      { n: "The Power to Destroy...", f: "H", g: "Varimathras, Undercity", o: "Two shadow spellbooks from Searing Blade casters" }
+    ] },
+  hot: { src: "new", route: [{ stops: [["Faldrim Anvilmar", "", "tombs, ghost trash"], ["Magmatus", "", "Dark Iron area"], ["Plunder", "", "patrols hallway"], ["Durgen Dirgehammer", "f", "center platform"]] }],
+    quests: [
+      { n: "Underground Map", f: "A", g: "Dark Iron Map drop (Dark Iron Spies, Dun Morogh) → Earthseer Farsen", o: "Unlocks the dungeon" },
+      { n: "Old Ironforge Incursion", f: "A", g: "Earthseer Farsen, Dun Morogh", o: "Durgen's head to King Magni", b: "Durgen Dirgehammer" },
+      { n: "The Restless Dead", f: "A", g: "Afadra Dunwall, Ironforge", o: "15 Enraged Apparitions, 10 Tormented Souls, Faldrim", b: "Faldrim Anvilmar" },
+      { n: "Important Heirlooms", f: "A", g: "Thom Filch, Ironforge", o: "8 Dwarven Heirlooms" },
+      { n: "An Ancient Grudge", f: "B", g: "Ghostly Attendant (inside)", o: "Lay Faldrim's spirit to rest", b: "Faldrim Anvilmar", i: 1 },
+      { n: "The Treaty of Understanding", f: "A", g: "Stone tablet in the vault (inside)", o: "Bring it to King Magni", i: 1 }
+    ] },
+  rol: { src: "new", route: [{ stops: [["Witherfang", "", "King's Alley"], ["The Baron"], ["Viktor the Vile", "oe", "chimney event, 5 waves"], ["The Abandoned", "e", "Market Square statue"], ["Bjork", "", "patrols center"], ["Rath'mael", "f", "level 20"], ["Lordaeron Captain", "r"]] }],
+    quests: [
+      { n: "The Wrath of Rath'mael", f: "H", g: "Deathguard Kristof, Tirisfal (after Rear Guard Patrol)", b: "Rath'mael" },
+      { n: "A Frightened Request", f: "H", g: "Tabitha Heartweaver, Silverpine" },
+      { n: "Light's Justice", f: "H", g: "Morbin Lightbane, Undercity" },
+      { n: "The New Plague", f: "H", g: "Theodore Griffs, Undercity (after A Recipe For Death)" },
+      { n: "Unending Torment", f: "H", g: "Drops from The Baron", b: "The Baron", i: 1 },
+      { n: "Crest of Lordaeron", f: "B", g: "Crest item, spawns inside", i: 1 },
+      { n: "Abominable Creatures", f: "A", g: "Captain Truman (inside)", i: 1 },
+      { n: "Bloodied Insignia", f: "A", g: "Drops from skeletons (inside)", i: 1 },
+      { n: "Remember That I Love You", f: "A", g: "Blood-stained Letter near Rath'mael", b: "Rath'mael", i: 1 }
+    ] },
+  dm: { src: "classic", route: [{ stops: [["Rhahk'Zor"], ["Miner Johnson", "r"], ["Sneed's Shredder"], ["Gilnid"], ["Mr. Smite"], ["Captain Greenskin"], ["Edwin VanCleef", "f"], ["Cookie", "o"]] }],
+    quests: [
+      { n: "Red Silk Bandanas", f: "A", g: "Scout Riell, Sentinel Hill", o: "Red Silk Bandanas from Defias" },
+      { n: "Collecting Memories", f: "A", g: "Wilder Thistlenettle, Stormwind", o: "Miner's Union Cards" },
+      { n: "Oh Brother...", f: "A", g: "Wilder Thistlenettle, Stormwind", o: "Foreman Thistlenettle's badge" },
+      { n: "Underground Assault", f: "A", g: "Shoni the Shilent, Stormwind", o: "Gnoam Sprecklesprocket from Sneed's Shredder", b: "Sneed's Shredder" },
+      { n: "The Defias Brotherhood", f: "A", g: "Gryan Stoutmantle, Sentinel Hill (chain)", o: "VanCleef's head", b: "Edwin VanCleef" },
+      { n: "The Unsent Letter", f: "A", g: "Drops from VanCleef", b: "Edwin VanCleef", i: 1 }
+    ] },
+  wc: { src: "classic", route: [
+      { wing: "Outer", stops: [["Lady Anacondra"], ["Kresh", "o"], ["Lord Cobrahn"], ["Lord Pythas"], ["Skum", "o"], ["Lord Serpentis"], ["Verdan the Everliving"]] },
+      { wing: "Finale", stops: [["Disciple of Naralex escort", "e"], ["Mutanus the Devourer", "fe"], ["Deviate Faerie Dragon", "r"]] }],
+    quests: [
+      { n: "Deviate Hides", f: "B", g: "Nalpak, WC entrance cave", o: "Deviate Hides" },
+      { n: "Deviate Eradication", f: "B", g: "Ebru, WC entrance cave", o: "Kill deviate beasts" },
+      { n: "Trouble at the Docks", f: "B", g: "Crane Operator Bigglefuzz, Ratchet", o: "Mad Magglish's stolen bottle" },
+      { n: "Smart Drinks", f: "B", g: "Mebok Mizzyrix, Ratchet", o: "Wailing Essences" },
+      { n: "Leaders of the Fang", f: "H", g: "Nara Wildmane, Thunder Bluff", o: "Gems from Anacondra, Cobrahn, Pythas, Serpentis", b: "Lord Serpentis" },
+      { n: "Serpentbloom", f: "H", g: "Apothecary Zamah, Thunder Bluff", o: "Serpentbloom" },
+      { n: "The Glowing Shard", f: "B", g: "Drops from Mutanus", b: "Mutanus the Devourer", i: 1 }
+    ] },
+  sfk: { src: "classic", route: [{ stops: [["Rethilgore"], ["Razorclaw the Butcher"], ["Baron Silverlaine"], ["Commander Springvale"], ["Odo the Blindwatcher"], ["Fenrus the Devourer"], ["Wolf Master Nandos"], ["Archmage Arugal", "f"]] }],
+    quests: [
+      { n: "Deathstalkers in Shadowfang", f: "H", g: "High Executor Hadrec, The Sepulcher", o: "Find Deathstalkers Adamant and Vincent" },
+      { n: "The Book of Ur", f: "H", g: "Keeper Bel'dugur, Undercity", o: "Book of Ur" },
+      { n: "Arugal Must Die", f: "H", g: "Dalar Dawnweaver, The Sepulcher", o: "Arugal's head", b: "Archmage Arugal" }
+    ] },
+  bfd: { src: "classic", route: [{ stops: [["Ghamoo-ra"], ["Lady Sarevess"], ["Gelihast"], ["Lorgus Jett", "o"], ["Baron Aquanis", "e"], ["Twilight Lord Kelris"], ["Old Serra'kis"], ["Aku'mai", "f"]] }],
+    quests: [
+      { n: "Knowledge in the Deeps", f: "A", g: "Gerrig Bonegrip, Ironforge", o: "Lorgalis Manuscript" },
+      { n: "Researching the Corruption", f: "A", g: "Gershala Nightwhisper, Auberdine", o: "Corrupt brain stems" },
+      { n: "In Search of Thaelrid", f: "A", g: "Dawnwatcher Shaedlass, Darnassus", o: "Find Argent Guard Thaelrid" },
+      { n: "Blackfathom Villainy", f: "B", g: "Argent Guard Thaelrid (inside)", o: "Kelris's head", b: "Twilight Lord Kelris", i: 1 },
+      { n: "Amongst the Ruins", f: "H", g: "Je'neu Sancrea, Zoram'gar", o: "Fathom Core" },
+      { n: "Allegiance to the Old Gods", f: "H", g: "Damp Note drop → Je'neu Sancrea", o: "Kill Lorgus Jett", b: "Lorgus Jett" },
+      { n: "Baron Aquanis", f: "H", g: "Strange Water Globe (inside)", b: "Baron Aquanis", i: 1 }
+    ] },
+  stk: { src: "classic", route: [{ stops: [["Targorr the Dread"], ["Kam Deepfury"], ["Hamhock"], ["Bazil Thredd"], ["Dextren Ward", "f"], ["Bruegal Ironknuckle", "r"]] }],
+    quests: [
+      { n: "What Comes Around...", f: "A", g: "Guard Berton, Lakeshire", o: "Targorr's head", b: "Targorr the Dread" },
+      { n: "Crime and Punishment", f: "A", g: "Councilman Millstipe, Darkshire", o: "Dextren Ward's hand", b: "Dextren Ward" },
+      { n: "Quell the Uprising", f: "A", g: "Warden Thelwater, Stormwind", o: "Kill rioting prisoners" },
+      { n: "The Color of Blood", f: "A", g: "Nikova Raskol, Stormwind", o: "Red Wool Bandanas" },
+      { n: "The Fury Runs Deep", f: "A", g: "Motley Garmason, Dun Modr", o: "Kam Deepfury's head", b: "Kam Deepfury" },
+      { n: "The Stockade Riots", f: "A", g: "Warden Thelwater, Stormwind", o: "Bazil Thredd's head", b: "Bazil Thredd" }
+    ] },
+  exc: { src: "new", route: [{ stops: [["Saltspine", "", "crocolisk lake"], ["Shadetooth", "", "raptor path"], ["Highland Horror", "o", "Alliance quest boss"], ["Relic Guardian", "fe", "level 31, Titan panel"]] }],
+    quests: [
+      { n: "Songblade Search", f: "A", g: "Dorin Songblade, Lakeshire", o: "Find Daewyn's body after the 2nd boss" },
+      { n: "Lost in the Thicket Things", f: "A", g: "Caitlin Grassman, Menethil Harbor", o: "Find Ardin near the last boss" },
+      { n: "Highland Hides", f: "A", g: "James Halloran, Menethil (after Young Crocolisk Skins)", o: "4 Thicket Raptor Hides" },
+      { n: "Horrors in the Highland", f: "A", g: "Rethiel the Greenwarden, Wetlands (after 3 gnoll quests)", o: "Horrible Rootcore", b: "Highland Horror" },
+      { n: "Lost Relic Carry", f: "A", g: "Titan Relic from Relic Guardian → Prospector Whelgar", b: "Relic Guardian", i: 1 },
+      { n: "Changing Tastes", f: "H", g: "Borstan, Orgrimmar", o: "4 Thicket Raptor Meat" },
+      { n: "Open the Maw", f: "H", g: "Deathstalker Agent, Wetlands (after Dragonmaw Rumors, Hammerfall)", o: "Dragonmaw Saboteurs, Warders, Dispatch" },
+      { n: "Elder Knowledge", f: "H", g: "Titan Relic from Relic Guardian → Bashana Runetotem", b: "Relic Guardian", i: 1 }
+    ] },
+  rfk: { src: "classic", route: [{ stops: [["Roogug"], ["Aggem Thorncurse"], ["Death Speaker Jargba"], ["Overlord Ramtusk"], ["Agathelos the Raging"], ["Blind Hunter", "r"], ["Earthcaller Halmgar", "r"], ["Charlga Razorflank", "f"]] }],
+    quests: [
+      { n: "Blueleaf Tubers", f: "B", g: "Mebok Mizzyrix, Ratchet", o: "Dig up Blueleaf Tubers with a snufflenose gopher" },
+      { n: "Willix the Importer", f: "B", g: "Willix (inside)", o: "Escort him out", i: 1 },
+      { n: "Mortality Wanes", f: "A", g: "Heraltha Fallowbrook (inside)", o: "Treshala's pendant", i: 1 },
+      { n: "Going, Going, Guano!", f: "H", g: "Master Apothecary Faranell, Undercity", o: "Kraul Guano" },
+      { n: "Blood Shards (Agamaggan's buffs)", f: "B", g: "Mangletooth, Razorfen Kraul camp", o: "Trade Blood Shards for buffs" }
+    ] },
+  gno: { src: "classic", route: [{ stops: [["Grubbis", "e", "with Kernobee/Blastmaster event"], ["Viscous Fallout"], ["Electrocutioner 6000"], ["Crowd Pummeler 9-60"], ["Dark Iron Ambassador", "r"], ["Mekgineer Thermaplugg", "f"]] }],
+    quests: [
+      { n: "Save Techbot!", f: "A", g: "Brother Sarno, Stormwind", o: "Techbot's memory core" },
+      { n: "Gnogaine", f: "A", g: "Ozzie Togglevolt, Kharanos", o: "Collect irradiated residue" },
+      { n: "The Only Cure is More Green Glow", f: "A", g: "Ozzie Togglevolt, Kharanos", o: "High potency radioactive fallout" },
+      { n: "Gyrodrillmatic Excavationators", f: "A", g: "Shoni the Shilent, Stormwind", o: "Robo-mechanical guts" },
+      { n: "Essential Artificials", f: "A", g: "Klockmort Spannerspan, Ironforge", o: "Essential Artificials" },
+      { n: "Data Rescue", f: "A", g: "Master Mechanic Castpipe, Ironforge", o: "Prismatic punch card" },
+      { n: "A Fine Mess", f: "A", g: "Kernobee (inside)", o: "Escort to Clockwerk Run", i: 1 },
+      { n: "The Grand Betrayal", f: "A", g: "High Tinker Mekkatorque, Ironforge", o: "Kill Thermaplugg", b: "Mekgineer Thermaplugg" },
+      { n: "Grime-Encrusted Ring", f: "B", g: "Drops from trash (inside)", i: 1 },
+      { n: "Chief Engineer Scooty", f: "H", g: "Sovik, Orgrimmar", o: "Talk to Scooty in Booty Bay" },
+      { n: "Rig Wars", f: "H", g: "Nogg, Orgrimmar", o: "Rig blueprints and Thermaplugg's safe combination", b: "Mekgineer Thermaplugg" }
+    ] },
+  dal: { src: "new", route: [
+      { wing: "Sewers", stops: [["Atrexis the Grave Knight"]] },
+      { wing: "City", stops: [["Arcane Anomaly"], ["Arcanic Enigma", "", "patrols NE, Path of Renewal"], ["Unstable Sentinel"], ["Fel Ancient", "", "Runeweaver Square"], ["Mana Devourer", "", "clear room first"], ["Lyn the Ignored", "oe", "Tome of Dalaran"], ["Shade of the Archmage", "f", "level 33"]] }],
+    quests: [
+      { n: "Attunement: Prison Break In → Dalaran Patrols → Blood in the Streets", f: "H", g: "Magus Wordeen Voidglare, Tarren Mill", o: "Ends at Image of Archmage Modera; gives the Sewer Key" },
+      { n: "An Alarming Request", f: "A", g: "Emissary Jaques, Southshore", o: "Leads to Modera and the Sewer Key" },
+      { n: "Heart of Disruption", f: "B", g: "Image of Archmage Modera, outside the sewers", o: "Arcane Mote from the Shade", b: "Shade of the Archmage" },
+      { n: "Source of Power", f: "H", g: "Doctor Martin Felben, Undercity", o: "6 Cracked Sentry Cores" },
+      { n: "The Grave Knight", f: "H", g: "Melisara, Tarren Mill", o: "Kill Atrexis", b: "Atrexis the Grave Knight" },
+      { n: "Opportunistic Education", f: "H", g: "Rexxie Copperclutch (inside entrance)", o: "The Founding of Dalaran tome", i: 1 },
+      { n: "Power Overwhelming", f: "A", g: "High Sorcerer Andromath, Stormwind", o: "Kill the Arcanic Enigma", b: "Arcanic Enigma" },
+      { n: "A Green Sample", f: "A", g: "Shylamiir, Stormwind", o: "Fel Infused Blossom after the Fel Ancient", b: "Fel Ancient" },
+      { n: "Starving Arcane", f: "A", g: "Image of Archmage Modera", o: "8 each Seeking/Saturated Remnants, Mana Echoes" }
+    ] },
+  sm: { src: "classic", route: [
+      { wing: "Graveyard", stops: [["Interrogator Vishas"], ["Ironspine", "r"], ["Azshir the Sleepless", "r"], ["Fallen Champion", "r"], ["Bloodmage Thalnos", "f"]] },
+      { wing: "Library", stops: [["Houndmaster Loksey"], ["Arcanist Doan", "f"]] },
+      { wing: "Armory", stops: [["Herod", "f"]] },
+      { wing: "Cathedral", stops: [["High Inquisitor Fairbanks", "o"], ["Scarlet Commander Mograine"], ["High Inquisitor Whitemane", "f"]] }],
+    quests: [
+      { n: "Mythology of the Titans", f: "A", g: "Librarian Mae Paledust, Ironforge", o: "Book from the Library" },
+      { n: "In the Name of the Light", f: "A", g: "Raleigh the Devout, Southshore (chain)", o: "Kill Whitemane, Mograine, Herod, Doan", b: "High Inquisitor Whitemane" },
+      { n: "Into The Scarlet Monastery", f: "H", g: "Varimathras, Undercity", o: "Kill Doan, Herod, Mograine, Whitemane", b: "High Inquisitor Whitemane" },
+      { n: "Hearts of Zeal", f: "H", g: "Master Apothecary Faranell, Undercity", o: "20 Hearts of Zeal" },
+      { n: "Vorrel's Revenge", f: "H", g: "Vorrel Sengutz (inside Graveyard)", o: "Return his ring to Monika Sengutz", i: 1 },
+      { n: "Compendium of the Fallen", f: "H", g: "Sage Truthseeker, Thunder Bluff", o: "Book from the Library" },
+      { n: "Test of Lore", f: "H", g: "Parqual Fintallas, Undercity", o: "Beginnings of the Undead Threat (Library)" }
+    ] },
+  rfd: { src: "classic", route: [{ stops: [["Tuten'kash", "e", "gong"], ["Mordresh Fire Eye"], ["Plaguemaw the Rotting", "o"], ["Glutton"], ["Ragglesnout", "r"], ["Belnistrasz idol event", "e"], ["Amnennar the Coldbringer", "f"]] }],
+    quests: [
+      { n: "A Host of Evil", f: "B", g: "Myriam Moonsinger, outside the entrance", o: "Kill Razorfen battleguards, thornweavers, quilguards" },
+      { n: "Extinguishing the Idol", f: "B", g: "Belnistrasz (inside)", o: "Protect him at the idol", i: 1 },
+      { n: "Scourge of the Downs", f: "B", g: "Belnistrasz (inside, after Idol)", o: "Kill Amnennar", b: "Amnennar the Coldbringer", i: 1 },
+      { n: "Bring the Light", f: "A", g: "Archbishop Benedictus, Stormwind", o: "Kill Amnennar", b: "Amnennar the Coldbringer" },
+      { n: "An Unholy Alliance", f: "H", g: "Varimathras, Undercity", o: "Ambassador Malcin's head" },
+      { n: "Bring the End", f: "H", g: "Andrew Brownell, Undercity", o: "Amnennar's skull", b: "Amnennar the Coldbringer" }
+    ] },
+  drc: { src: "new", route: [{ stops: [["Zul'Alai"], ["Var'Taka"], ["Primeval Elemental"], ["Captain Dreadrise"], ["Deathless Marrow"], ["Min'loth the Serpent", "f"], ["Umbra", "r"], ["Gill", "r"]] }],
+    quests: [
+      { n: "Magics of the Drowned City", f: "A", g: "Loremaster Dibbs, Southshore", o: "Leads to The Web of Magic" },
+      { n: "Take Two With Water", f: "A", g: "Loremaster Dibbs, Southshore", o: "Leads to Findings for the Explorer's League" },
+      { n: "Ancient Gurubashi Secrets", f: "A", g: "Archmage Timear, Dalaran" },
+      { n: "The Drowned City", f: "H", g: "Kin'weelay, Grom'gol (after The Vile Reef)" },
+      { n: "The Only Good Brinescale...", f: "H", g: "Commander Aggro'gosh, Grom'gol" },
+      { n: "Ancient Gurubashi Idol", f: "H", g: "Mazu'kon, Skywatcher Plateau, Mulgore" },
+      { n: "Shady Saltseers", f: "B", g: "Krazek, Booty Bay" },
+      { n: "The Saltseer Captain", f: "B", g: "Krazek, Booty Bay", b: "Captain Dreadrise" }
+    ] },
+  uld: { src: "classic", route: [
+      { wing: "Upper", stops: [["Revelosh"], ["Baelog, Eric & Olaf", "", "lost dwarves"], ["Ironaya", "e", "Staff of Prehistoria"], ["Obsidian Sentinel"], ["Ancient Stone Keeper"], ["Galgann Firehammer"], ["Grimlok"]] },
+      { wing: "Chamber", stops: [["Archaedas", "fe", "level 47"]] }],
+    quests: [
+      { n: "The Lost Dwarves", f: "A", g: "Prospector Stormpike, Ironforge", o: "Baelog's Journal", b: "Baelog, Eric & Olaf" },
+      { n: "A Sign of Hope → Amulet of Secrets", f: "A", g: "Prospector Ryedol, Badlands", o: "Hammertoe's amulet" },
+      { n: "Necklace Recovery", f: "A", g: "Talvash del Kissel, Ironforge", o: "Necklace gems from Ironaya, Grimlok, Archaedas", b: "Archaedas" },
+      { n: "Uldaman Reagent Run", f: "H", g: "Jarkal Mossmeld, Kargath", o: "12 Magenta Fungus Caps" },
+      { n: "Reclaimed Treasures", f: "H", g: "Patrick Garrett, Undercity", o: "Family treasure in the north hall" },
+      { n: "Solution to Doom", f: "B", g: "Theldurin the Lost, Badlands", o: "Tablet of Will", },
+      { n: "The Platinum Discs", f: "B", g: "Discs in Archaedas's chamber (inside)", o: "Talk to the Lore Keeper of Norgannon", b: "Archaedas", i: 1 }
+    ] },
+  krd: { src: "new", route: [
+      { wing: "Outside", stops: [["Tunk", "x", "drops the key mould (~50%)"]] },
+      { wing: "Stronghold", stops: [["Slavecrusher Grox", "", "mines"], ["Twilight Commander Zarmok", "", "city entrance, patrols"], ["War Handler Ashka", "", "with 2 pets"], ["Nar'gurk"], ["Zalfan Moonshadow", "o", "Alliance quest target"], ["Bossman Toof", "e", "bridge"], ["Overlord Mugg", "f", "level 45"]] }],
+    quests: [
+      { n: "Krol'dok Moulding", f: "B", g: "Krol'dok Mould from Tunk → Farholde Keep (A) / Rog'mar (H)", o: "Step 1 of the Compound Key", b: "Tunk" },
+      { n: "Key Ingredients", f: "B", g: "Alphonse Dumas (A) / Kreza Darkthorn (H)", o: "4 Thick Leather, 12 Iron Bars → Krol'dok Compound Key" },
+      { n: "A Small Favor", f: "A", g: "Ashe Amberhall, Farholde Keep", o: "Capture a Twilight's Thrall (needed before Tome)" },
+      { n: "Tome of Twilight", f: "B", g: "Ashe Amberhall (A) / Tran'gul, Rog'mar (H)", o: "Kill Nar'gurk", b: "Nar'gurk" },
+      { n: "Eye of Mugg", f: "B", g: "Demar Brant (A) / Krom'rosh (H)", o: "Kill Overlord Mugg (needs level 40)", b: "Overlord Mugg" },
+      { n: "Vengeance of the Highborne", f: "A", g: "Ranath Nightstride, Alterac Mountains", o: "Kill Zalfan Moonshadow", b: "Zalfan Moonshadow" },
+      { n: "A Token of Vengeance", f: "H", g: "Da'grosh, west of Rog'mar (after Clugfist's Decree, The Wayward Warrior)", o: "15 Cultist Ears" },
+      { n: "Krol'dok No More!", f: "B", g: "Marcus Tilwell (A) / Horde prisoner (H), inside", o: "Escort out", i: 1 }
+    ] },
+  zf: { src: "classic", route: [{ stops: [["Antu'sul"], ["Theka the Martyr"], ["Witch Doctor Zum'rah"], ["Nekrum & Sezz'ziz"], ["Sergeant Bly", "e", "pyramid event"], ["Hydromancer Velratha"], ["Gahz'rilla", "oe", "gong, Mallet of Zul'Farrak"], ["Chief Ukorz Sandscalp", "f"]] }],
+    quests: [
+      { n: "Divino-matic Rod", f: "B", g: "Chief Engineer Bilgewhizzle, Gadgetzan", o: "Rod from Sergeant Bly", b: "Sergeant Bly" },
+      { n: "Gahz'rilla", f: "B", g: "Wizzle Brassbolts, Shimmering Flats", o: "Gahz'rilla's scale", b: "Gahz'rilla" },
+      { n: "Troll Temper", f: "B", g: "Trenton Lighthammer, Gadgetzan", o: "20 Troll Tempers" },
+      { n: "Scarab Shells", f: "B", g: "Tran'rek, Gadgetzan", o: "5 Uncracked Scarab Shells" },
+      { n: "Tiara of the Deep", f: "B", g: "Tabetha, Dustwallow Marsh", o: "Velratha's tiara", b: "Hydromancer Velratha" },
+      { n: "The Prophecy of Mosh'aru", f: "B", g: "Yeh'kinya, Steamwheedle Port", o: "Tablets from Theka and Velratha", b: "Theka the Martyr" },
+      { n: "Nekrum's Medallion", f: "B", g: "Thadius Grimshade, Blasted Lands (chain)", o: "Medallion from Nekrum", b: "Nekrum & Sezz'ziz" }
+    ] },
+  mar: { src: "classic", route: [
+      { wing: "Purple", stops: [["Lord Vyletongue"], ["Celebras the Cursed"]] },
+      { wing: "Orange", stops: [["Noxxion"], ["Razorlash"]] },
+      { wing: "Inner", stops: [["Landslide"], ["Tinkerer Gizlock"], ["Rotgrip"], ["Princess Theradras", "f", "level 51"]] }],
+    quests: [
+      { n: "Shadowshard Fragments", f: "B", g: "Archmage Tervosh, Theramore (A) / Uthel'nay, Orgrimmar (H)", o: "10 Shadowshard Fragments" },
+      { n: "Vyletongue Corruption", f: "B", g: "Talendria (A) / Vark Battlescar (H), Desolace", o: "Fill the Coated Cerulean Vial" },
+      { n: "Twisted Evils", f: "B", g: "Willow (A) / Vark (H), Desolace", o: "15 Theradric Crystal Carvings" },
+      { n: "Legends of Maraudon", f: "B", g: "Cavindra, Desolace", o: "Celebras's scepter pieces", b: "Celebras the Cursed" },
+      { n: "The Scepter of Celebras", f: "B", g: "Celebras the Redeemed (inside)", o: "Help him forge the scepter", i: 1 },
+      { n: "Corruption of Earth and Seed", f: "B", g: "Keeper Marandis (A) / Selendra (H), Desolace", o: "Kill Princess Theradras", b: "Princess Theradras" }
+    ] },
+  st: { src: "classic", route: [{ stops: [["Atal'alarion", "e", "statue puzzle"], ["Dreamscythe"], ["Weaver"], ["Avatar of Hakkar", "e", "brazier event"], ["Jammal'an the Prophet"], ["Ogom the Wretched"], ["Morphaz"], ["Hazzas"], ["Shade of Eranikus", "f"]] }],
+    quests: [
+      { n: "The Temple of Atal'Hakkar", f: "B", g: "Brohann Caskbelly (A) / Fel'Zerul (H)", o: "20 Fetishes of Hakkar" },
+      { n: "Into the Temple of Atal'Hakkar", f: "A", g: "Brohann Caskbelly, Stormwind", o: "Atal'ai tablets" },
+      { n: "Jammal'an the Prophet", f: "A", g: "Atal'ai Exile, Hinterlands", o: "Jammal'an's head", b: "Jammal'an the Prophet" },
+      { n: "The God Hakkar", f: "B", g: "Yeh'kinya, Steamwheedle Port (chain)", o: "Fill the Egg of Hakkar at the Avatar", b: "Avatar of Hakkar" },
+      { n: "The Essence of Eranikus", f: "B", g: "Drops from Shade of Eranikus", b: "Shade of Eranikus", i: 1 },
+      { n: "Secret of the Circle", f: "B", g: "Marvon Rivetseeker, Tanaris", o: "Altar of Hakkar, Atal'alarion", b: "Atal'alarion" }
+    ] },
+  alc: { src: "new", route: [{ stops: [["Tidemistress Ca'zass"], ["Overseer Wrex"], ["The Questioner", "", "don't kill until the follow-up is picked up"], ["Katerina the Cleaner"], ["Zarla Ober / Blazeroar", "f", "level 51"]] }],
+    quests: [
+      { n: "The Dragon's Journal", f: "A", g: "Archmage Lan'dalock, Dalaran" },
+      { n: "A Bit of Wet Work", f: "A", g: "Sully McCleary, Dustwallow (after Our Man in Theramore, Shaw)" },
+      { n: "The Secret Prison", f: "A", g: "Sully McCleary, Dustwallow" },
+      { n: "Somber News", f: "A", g: "Perfumed Note (inside)", i: 1 },
+      { n: "Blood Red Bandanas", f: "H", g: "Sergeant Ulka, Dustwallow (after The Missing Kor'kron, Eitrigg)" },
+      { n: "A Little Payback", f: "H", g: "Sergeant Ulka, Dustwallow" },
+      { n: "No Orc Left Behind", f: "H", g: "Sergeant Ulka, Dustwallow" },
+      { n: "The Honor of the Kor'kron", f: "H", g: "Commander Folkar (inside)", i: 1 },
+      { n: "Bad News for Folkar → Thrall Needs to Know", f: "H", g: "Perfumed Note, then Folkar (inside)", i: 1 },
+      { n: "The Man in the Iron Chains", f: "B", g: "Mason Connery (inside)", o: "Keep The Questioner alive until you have the follow-up", b: "The Questioner", i: 1 },
+      { n: "More Valuable than Gold", f: "B", g: "Mason Connery (inside, follow-up)", i: 1 }
+    ] },
+  brd: { src: "classic", route: [
+      { wing: "Detention & Ring", stops: [["High Interrogator Gerstahn"], ["Lord Roccor"], ["Houndmaster Grebmar"], ["Ring of Law", "e"], ["Pyromancer Loregrain"]] },
+      { wing: "Vault & Forge", stops: [["Warder Stilgiss"], ["Fineous Darkvire"], ["Bael'Gar"], ["Lord Incendius"], ["General Angerforge"], ["Golem Lord Argelmach"]] },
+      { wing: "Grim Guzzler", stops: [["Hurley Blackbreath", "e"], ["Phalanx"], ["Ribbly Screwspigot", "o"], ["Plugger Spazzring", "o"]] },
+      { wing: "Palace", stops: [["Ambassador Flamelash"], ["The Seven", "e"], ["Magmus"], ["Emperor Dagran Thaurissan", "f", "level 59"]] }],
+    quests: [
+      { n: "Dark Iron Legacy", f: "B", g: "Franclorn Forgewright, Blackrock Mountain", o: "Ironfel from Fineous Darkvire (Shadowforge Key)", b: "Fineous Darkvire" },
+      { n: "Ribbly Screwspigot", f: "B", g: "Yuka Screwspigot, Burning Steppes", o: "Ribbly's head", b: "Ribbly Screwspigot" },
+      { n: "The Love Potion", f: "B", g: "Mistress Nagmara (inside)", i: 1 },
+      { n: "Lost Thunderbrew Recipe", f: "B", g: "Ragnar Thunderbrew, Kharanos (A) / Vivian Lagrave, Kargath (H)", b: "Hurley Blackbreath" },
+      { n: "Incendius!", f: "B", g: "Thorium Brotherhood, Thorium Point", o: "Kill Lord Incendius", b: "Lord Incendius" },
+      { n: "The Heart of the Mountain", f: "B", g: "Maxwort Uberglint, Burning Steppes", o: "Heart of the Mountain from the Vault" },
+      { n: "Attunement to the Core", f: "B", g: "Lothos Riftwaker, Blackrock Mountain", o: "Core Fragment near Lothos's portal" },
+      { n: "The Royal Rescue", f: "A", g: "King Magni Bronzebeard, Ironforge (Kharan chain)", o: "Kill the Emperor, save Moira", b: "Emperor Dagran Thaurissan" },
+      { n: "Commander Gor'shak / What Is Going On?", f: "H", g: "Galamav the Marksman, Kargath", o: "Free Gor'shak" },
+      { n: "Disharmony of Fire", f: "H", g: "Thunderheart, Kargath", o: "Kill Lord Incendius", b: "Lord Incendius" }
+    ] },
+  lbrs: { src: "classic", route: [{ stops: [["Highlord Omokk"], ["Shadow Hunter Vosh'gajin"], ["War Master Voone"], ["Mother Smolderweb"], ["Urok Doomhowl", "oe"], ["Quartermaster Zigris"], ["Halycon"], ["Gizrul the Slavener"], ["Overlord Wyrmthalak", "f"], ["Spirestone Butcher", "r"], ["Bannok Grimaxe", "r"]] }],
+    quests: [
+      { n: "Seal of Ascension", f: "B", g: "Vaelan (inside)", o: "3 gemstones → UBRS key", i: 1 },
+      { n: "Maxwell's Mission", f: "A", g: "Marshal Maxwell, Burning Steppes", o: "Kill Voone, Omokk, Wyrmthalak", b: "Overlord Wyrmthalak" },
+      { n: "Warlord's Command", f: "H", g: "Warlord Goretooth, Kargath", o: "Kill Omokk, Voone, Wyrmthalak; Important Blackrock Documents", b: "Overlord Wyrmthalak" },
+      { n: "Mother's Milk", f: "B", g: "Ragged John, Burning Steppes", o: "Get poisoned by Mother Smolderweb", b: "Mother Smolderweb" },
+      { n: "Kibler's Exotic Pets", f: "B", g: "Kibler, Flame Crest", o: "Worg pups" },
+      { n: "Bijou's Belongings", f: "B", g: "Bijou (inside)", i: 1 },
+      { n: "Urok Doomhowl", f: "B", g: "Warosh the Redeemed (inside)", b: "Urok Doomhowl", i: 1 },
+      { n: "The Darkstone Tablet", f: "H", g: "Shadowmage Vivian Lagrave, Kargath", o: "Darkstone Tablet" }
+    ] },
+  bmh: { src: "new", order: "unconfirmed", route: [{ stops: [["Withermaw"], ["Impaan the Imprisoner", "", "right path up the hill, interrupt"], ["Elder Shaman Bloodmane"], ["Bonesnout the Unbroken"], ["Varrox Bleakhoof", "f"], ["Blackmaw Behemoth", "o"], ["Unbound Spirit", "o"]] }],
+    quests: [
+      { n: "Get to the Roots of It", f: "B", g: "After Beneath Nordrassil: Mathrengyl Bearwalker (A) / Nara Wildmane (H)", o: "10 Nordrassil Root Caps" },
+      { n: "Blackmaw Magic", f: "B", g: "Archmage Timear, Dalaran (A) / Muln Earthfury, Mulgore (H)", o: "Blackmaw Ritual Totem", b: "Elder Shaman Bloodmane" },
+      { n: "The Twin Bears", f: "B", g: "Lorekeeper Nok, Ursolan (Neutral Timbermaw)", o: "Find the Totems of Ursoc and Ursol" },
+      { n: "Claws That Rend, Tusks That Gore", f: "B", g: "Ogtinc, Azshara", o: "Drops from Withermaw and Bonesnout", b: "Bonesnout the Unbroken" },
+      { n: "A Lost Memento", f: "B", g: "Feathered Charm Necklace drop (inside) → Un'ell", i: 1 },
+      { n: "Blackmaw Pouches", f: "B", g: "Ekkal, Ruins of Eldarath", o: "5 pouches" },
+      { n: "Blackmaw Reclamation", f: "B", g: "Gatekeeper Rageroar, Ursolan (after outdoor chain, Neutral Timbermaw)", o: "Head of Varrox Bleakhoof", b: "Varrox Bleakhoof" }
+    ] },
+  dmw: { src: "classic", route: [
+      { wing: "East", stops: [["Pusillin", "e", "chase; Crescent Key"], ["Zevrim Thornhoof"], ["Hydrospawn"], ["Lethtendris"], ["Old Ironbark", "o"], ["Alzzin the Wildshaper", "f"]] },
+      { wing: "West", stops: [["Tendris Warpwood"], ["Illyanna Ravenoak"], ["Magister Kalendris"], ["Immol'thar", "e", "5 pylons"], ["Prince Tortheldrin", "f"]] },
+      { wing: "North", stops: [["Guard Mol'dar"], ["Stomper Kreeg"], ["Guard Fengus"], ["Guard Slip'kik"], ["Captain Kromcrush"], ["Cho'Rush the Observer"], ["King Gordok", "f"]] }],
+    quests: [
+      { n: "Pusillin and the Elder Azj'Tordin", f: "B", g: "Azj'Tordin, Feralas", o: "Book from Pusillin", b: "Pusillin" },
+      { n: "Lethtendris's Web", f: "B", g: "Latronicus Moonspear (A) / Talo Thornhoof (H), Feralas", o: "Lethtendris's Web", b: "Lethtendris" },
+      { n: "Shards of the Felvine", f: "B", g: "Rabine Saturna, Moonglade", o: "Felvine Shard from Alzzin", b: "Alzzin the Wildshaper" },
+      { n: "Elven Legends", f: "B", g: "Scholar Runethorn (A) / Sage Korolusk (H), Feralas", o: "Find Kariel Winthalus in West" },
+      { n: "The Madness Within", f: "B", g: "Shen'dralar Ancient (inside West)", o: "Kill Immol'thar and Prince Tortheldrin", b: "Prince Tortheldrin", i: 1 },
+      { n: "The Treasure of the Shen'dralar", f: "B", g: "Shen'dralar Ancient (inside West)", i: 1 },
+      { n: "Unfinished Gordok Business", f: "B", g: "Captain Kromcrush (inside North)", o: "Gordok Courage gauntlet", i: 1 }
+    ] },
+  sha: { src: "new", route: [
+      { stops: [["Cinder", "", "appears after the Archival Panel"], ["Snowtalon"], ["Bolt"], ["Vitrix"], ["Nanaya", "f"]] },
+      { wing: "Optional", stops: [["Titanosaur", "o"], ["Tor'Rel", "o"], ["Venomridge", "o"], ["Thunderhoof", "o"], ["Direhorn Matriarch", "o"]] }],
+    qnote: "No in-dungeon quests are confirmed yet. Bring Un'Goro power crystals for the consoles inside.",
+    quests: [
+      { n: "Crystals of Power", f: "B", g: "J.D. Collie, Marshal's Refuge", o: "Power crystals (red, blue, yellow, green)" },
+      { n: "The Northern / Western / Eastern Pylon", f: "B", g: "Marshal's Refuge chain", o: "Activate the three pylons" },
+      { n: "The Shaper's Terrace", f: "B", g: "After Crystals of Power and the pylon chains", o: "Leads to the terrace" }
+    ] },
+  sch: { src: "classic", route: [{ stops: [["Kirtonos the Herald", "oe", "Blood of Innocents"], ["Jandice Barov"], ["Rattlegore"], ["Marduk Blackpool"], ["Vectus"], ["Ras Frostwhisper"], ["Instructor Malicia"], ["Doctor Theolen Krastinov"], ["Lorekeeper Polkelt"], ["The Ravenian"], ["Lord Alexei Barov"], ["Lady Illucia Barov"], ["Darkmaster Gandling", "f"]] }],
+    quests: [
+      { n: "Skeleton Key chain", f: "B", g: "Alchemist Arbington (A) / Apothecary Dithers (H), WPL", o: "Ends in The Key to Scholomance" },
+      { n: "Plagued Hatchlings", f: "B", g: "Betina Bigglezink, Light's Hope", o: "Kill 20 plagued hatchlings" },
+      { n: "Healthy Dragon Scale", f: "B", g: "Drop inside → Betina Bigglezink", i: 1 },
+      { n: "Doctor Theolen Krastinov, the Butcher", f: "B", g: "Eva Sarkhoff, Caer Darrow", b: "Doctor Theolen Krastinov" },
+      { n: "Barov Family Fortune", f: "B", g: "Weldon Barov (A) / Alexi Barov (H)", o: "Four deeds" },
+      { n: "The Lich, Ras Frostwhisper", f: "B", g: "Magistrate Marduke, Caer Darrow", b: "Ras Frostwhisper" },
+      { n: "Dawn's Gambit", f: "B", g: "Betina Bigglezink, Light's Hope", o: "Use Dawn's Gambit on Vectus", b: "Vectus" }
+    ] },
+  str: { src: "classic", route: [
+      { wing: "Live (Main Gate)", stops: [["Skul", "r"], ["Fras Siabi"], ["Hearthsinger Forresten", "r"], ["The Unforgiven"], ["Timmy the Cruel"], ["Cannon Master Willey"], ["Archivist Galford"], ["Balnazzar", "f"]] },
+      { wing: "Undead (Service Gate)", stops: [["Magistrate Barthilas"], ["Nerub'enkan"], ["Baroness Anastari"], ["Maleki the Pallid"], ["Ramstein the Gorger"], ["Baron Rivendare", "f"]] }],
+    quests: [
+      { n: "The Archivist", f: "B", g: "Duke Nicholas Zverenhoff, Light's Hope", o: "Kill Archivist Galford", b: "Archivist Galford" },
+      { n: "The Truth Comes Crashing Down", f: "B", g: "Drops from Balnazzar", b: "Balnazzar", i: 1 },
+      { n: "The Great Fras Siabi", f: "B", g: "Smokey LaRue, Light's Hope", b: "Fras Siabi" },
+      { n: "Houses of the Holy", f: "B", g: "Leonid Barthalomew, Light's Hope", o: "Holy Water from supply crates" },
+      { n: "The Restless Souls", f: "B", g: "Egan, EPL", o: "Free spectral citizens" },
+      { n: "Dead Man's Plea", f: "B", g: "Anthion Harmon, EPL", o: "Save Ysida (timed run)", b: "Baron Rivendare" },
+      { n: "Of Love and Family", f: "B", g: "Tirion chain → painting in Live", o: "Bring the painting to Artist Renfray" },
+      { n: "Menethil's Gift", f: "B", g: "Leonid Barthalomew", o: "Undead side" },
+      { n: "Aurius' Reckoning", f: "B", g: "Aurius (inside)", i: 1 }
+    ] },
+  ubrs: { src: "classic", route: [{ stops: [["Pyroguard Emberseer", "e"], ["Solakar Flamewreath", "e", "Father Flame"], ["Jed Runewatcher", "r"], ["Goraluk Anvilcrack"], ["Warchief Rend Blackhand & Gyth", "e"], ["The Beast"], ["General Drakkisath", "f"]] }],
+    quests: [
+      { n: "General Drakkisath's Demise / Blackhand's Command", f: "A", g: "Marshal Maxwell chain", o: "Onyxia attunement step", b: "General Drakkisath" },
+      { n: "Blood of the Black Dragon Champion", f: "H", g: "Rexxar chain", o: "Onyxia attunement step", b: "General Drakkisath" },
+      { n: "For The Horde!", f: "H", g: "Thrall, Orgrimmar", o: "Rend's head", b: "Warchief Rend Blackhand & Gyth" },
+      { n: "Finkle Einhorn, At Your Service!", f: "B", g: "Skin The Beast", b: "The Beast", i: 1 }
+    ] }
+};
+</script>
 <script>
 const D = [
   { id:"rfc",  name:"Ragefire Chasm", zone:"Orgrimmar", fac:"H", min:13, max:16, best:15, note:"Horde only in practice (inside Orgrimmar)." },
@@ -239,6 +599,8 @@ let state = {
   faction: "A",
   party: [ {name:"You (example)", level:24}, {name:"Friend 1", level:23}, {name:"Friend 2", level:26}, {name:"", level:""}, {name:"", level:""} ],
   done: {},
+  q: {},
+  open: {},
   hideDone: false,
   showOther: false
 };
@@ -246,7 +608,51 @@ try {
   const saved = JSON.parse(localStorage.getItem(KEY) || "null");
   if (saved && Array.isArray(saved.party)) state = Object.assign(state, saved);
 } catch (e) {}
+if (!state.q) state.q = {};
+if (!state.open) state.open = {};
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+D.forEach(d => Object.assign(d, EXTRA[d.id] || { route: [], quests: [] }));
+function myQuests(d) {
+  return d.quests.map((q, i) => Object.assign({ key: d.id + ":" + i }, q)).filter(q => q.f === "B" || q.f === state.faction);
+}
+function questCount(d) {
+  const qs = myQuests(d);
+  return { total: qs.length, done: qs.filter(q => state.q[q.key]).length };
+}
+function routeHTML(d) {
+  const qs = myQuests(d);
+  let n = 0;
+  const wings = d.route.map((w, wi) => {
+    const items = [];
+    if (wi === 0) items.push('<li><span class="stop entry"><span class="si">▸</span><span class="sn">Entrance</span></span></li>');
+    w.stops.forEach(([name, fl = "", note = ""]) => {
+      const rare = fl.includes("r");
+      const cls = ["stop", fl.includes("f") ? "final" : "", fl.includes("o") ? "opt" : "", rare ? "rare" : "", fl.includes("x") ? "out" : ""].join(" ");
+      const idx = rare ? "R" : String(++n);
+      const qn = qs.filter(q => q.b === name).length;
+      const extra = [fl.includes("o") ? "optional" : "", fl.includes("x") ? "outside" : "", fl.includes("e") && !note ? "event" : "", note].filter(Boolean).join(" · ");
+      items.push('<li><span class="' + cls + '"><span class="si">' + idx + '</span><span class="sn">' + esc(name) +
+        (qn ? '<span class="qb" title="' + qn + ' quest' + (qn > 1 ? "s" : "") + ' need this">Q' + (qn > 1 ? qn : "") + '</span>' : "") + '</span>' +
+        (extra ? '<span class="sd">' + esc(extra) + '</span>' : "") + '</span></li>');
+    });
+    return '<div class="wing"><div class="wing-name">' + esc(w.wing || "Route") + '</div><ol class="stops">' + items.join("") + '</ol></div>';
+  }).join("");
+  return wings + '<div class="rlegend"><span>Gold = final boss</span><span>Dashed = optional</span><span>Dotted, R = rare spawn</span><span>Q = a quest needs this boss</span></div>' +
+    (d.order === "unconfirmed" ? '<p class="dnote">Boss order not confirmed yet; the hold has several routes.</p>' : "");
+}
+function questsHTML(d) {
+  const qs = myQuests(d);
+  if (!qs.length) return '<p class="dnote">No ' + (state.faction === "A" ? "Alliance" : "Horde") + ' quests listed for this dungeon.</p>';
+  return '<ul class="quests">' + qs.map(q => {
+    const done = !!state.q[q.key];
+    const id = "q-" + q.key.replace(":", "-");
+    const itag = q.i ? '<span class="qtag in">Starts inside</span>' : "";
+    const line = [q.g, q.o].filter(Boolean).join(" · ");
+    return '<li class="' + (done ? "qdone" : "") + '"><input type="checkbox" id="' + id + '" data-q="' + q.key + '"' + (done ? " checked" : "") + '>' +
+      '<label for="' + id + '"><span class="qn">' + esc(q.n) + '</span>' + itag + '<div class="qg">' + esc(line) + '</div></label></li>';
+  }).join("") + "</ul>" + (d.qnote ? '<p class="dnote">' + esc(d.qnote) + "</p>" : "");
+}
 
 function grayLevel(L) {
   if (L <= 5) return 0;
@@ -311,6 +717,7 @@ function renderParty() {
 }
 
 function renderAll() {
+  document.getElementById("toggle-all").textContent = Object.keys(state.open).length ? "Hide all routes" : "Show all routes";
   const ms = members();
   const pl = document.getElementById("party-line");
   if (ms.length) {
@@ -340,6 +747,7 @@ function renderAll() {
     }
     if (state.hideDone && isDone) return;
 
+    const qc = questCount(d);
     const row = document.createElement("article");
     row.className = "row s-" + ev.s + (isDone ? " done" : "");
     row.id = "row-" + d.id;
@@ -363,8 +771,20 @@ function renderAll() {
         '<div class="range" style="left:' + pct(d.min) + '%;width:' + (pct(d.max + 1) - pct(d.min)) + '%"></div>' +
         '<div class="best" style="left:' + pct(d.best + .5) + '%" title="Best level ' + d.best + '"></div>' + ticks +
         '</div><div class="lv">Enemies ' + d.min + '–' + d.max + ' · best <b>' + d.best + '</b></div></div>' +
-      '<div class="status"><span class="pill ' + ev.s + '">' + ev.label + '</span>' + ev.why.map(w => '<span class="why">' + esc(w) + '</span>').join("") + '</div>';
+      '<div class="status"><span class="pill ' + ev.s + '">' + ev.label + '</span>' + ev.why.map(w => '<span class="why">' + esc(w) + '</span>').join("") +
+        '<button type="button" class="dbtn" aria-expanded="' + (state.open[d.id] ? "true" : "false") + '" aria-controls="det-' + d.id + '">Route &amp; quests · ' + qc.done + '/' + qc.total + '</button></div>' +
+      (state.open[d.id] ? '<div class="details" id="det-' + d.id + '"><div><h4>Route <small>approximate boss order</small></h4>' + routeHTML(d) + '</div>' +
+        '<div><h4>Quests <small>' + qc.done + ' of ' + qc.total + ' done</small></h4>' + questsHTML(d) + '</div></div>' : "");
     list.appendChild(row);
+    row.querySelector(".dbtn").addEventListener("click", () => {
+      if (state.open[d.id]) delete state.open[d.id]; else state.open[d.id] = true;
+      save(); renderAll();
+    });
+    row.querySelectorAll("input[data-q]").forEach(cb => cb.addEventListener("change", () => {
+      if (cb.checked) state.q[cb.dataset.q] = true; else delete state.q[cb.dataset.q];
+      save(); renderAll();
+      const again = document.getElementById(cb.id); if (again) again.focus();
+    }));
     row.querySelector("#done-" + d.id).addEventListener("change", e => {
       if (e.target.checked) state.done[d.id] = true; else delete state.done[d.id];
       save(); renderAll();
@@ -401,7 +821,13 @@ document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click"
 }));
 document.getElementById("hide-done").addEventListener("change", e => { state.hideDone = e.target.checked; save(); renderAll(); });
 document.getElementById("show-other").addEventListener("change", e => { state.showOther = e.target.checked; save(); renderAll(); });
-document.getElementById("reset-done").addEventListener("click", () => { state.done = {}; save(); renderAll(); });
+document.getElementById("reset-done").addEventListener("click", () => { state.done = {}; state.q = {}; save(); renderAll(); });
+document.getElementById("toggle-all").addEventListener("click", () => {
+  const anyOpen = Object.keys(state.open).length > 0;
+  state.open = {};
+  if (!anyOpen) D.forEach(d => { state.open[d.id] = true; });
+  save(); renderAll();
+});
 document.getElementById("clear-party").addEventListener("click", () => {
   state.party = [0,1,2,3,4].map(() => ({ name: "", level: "" })); save(); renderParty(); renderAll();
 });
