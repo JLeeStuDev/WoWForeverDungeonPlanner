@@ -179,6 +179,12 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
 .map .ml { fill: var(--ink); }
 .map .mk { fill: var(--range); stroke: var(--panel); stroke-width: 1.5; }
 .map .mk.mf { fill: var(--accent); }
+.map .mwr { fill: var(--info-soft); stroke: var(--info); stroke-width: .6; }
+.map .mg { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 5 3; }
+.map .mgo { cursor: pointer; }
+.map .mgo:hover .mg, .map .mgo:focus .mg { stroke-width: 2; }
+.map .mgo:focus { outline: none; }
+.map .mk.mrr { fill: var(--muted); }
 .map .mk.mo { fill: var(--panel); stroke: var(--muted); stroke-dasharray: 3 2; }
 .map .mn { fill: var(--panel); font: 600 10.5px var(--font-mono); }
 .map .mn.mno { fill: var(--muted); }
@@ -247,7 +253,7 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
   <footer class="foot">
     <p><strong>How status works.</strong> No one gets kill XP from an enemy when anyone in the party is 13 or more levels above it (Blizzard hotfix, Nov 14 2026). Gray uses the Classic formula against your highest member. "Underleveled" means someone is more than 4 levels below the best level.</p>
     <p><strong>Data.</strong> For the 9 new dungeons, enemy ranges are Blizzard's announced ranges plus recorded boss levels. For the original 20, enemy levels are the original Classic values; Forever has changed these dungeons, so treat them as ±1–2. Best level = a few levels above the lowest enemy, so trash stays green while the last bosses are still beatable.</p>
-    <p><strong>Maps.</strong> Layout sketches are original rough drawings, not copies of the in-game maps and not to scale; use the "Full map" links for the real thing. Sketches so far: Blackrock Depths and the Deadmines.</p>
+    <p><strong>Maps.</strong> Layout sketches are original rough drawings, not copies of the in-game maps and not to scale; use the "Full map" links for the real thing. Every dungeon has a sketch; the 9 new dungeons' layouts are guesses from guide descriptions. Dashed gold boxes link to dungeons you can reach without leaving (Blackrock Mountain, and the shared courtyards of Scarlet Monastery, Dire Maul, Maraudon and Stratholme are drawn in one sketch).</p>
     <p><strong>Routes and quests.</strong> Routes are boss-order schematics, not to-scale maps; wings are drawn as separate lines. For the new dungeons they come from community guides (Method, Warcraft Tavern, Frostyboost, gfinity), and Blackmaw Hold's order is still unconfirmed. Original-dungeon routes and quests are the Classic versions; Forever reworked dungeon quests, so expect some additions or name changes. Quests shown follow the faction you picked.</p>
     <p>Your party, cleared dungeons and quest checkmarks are saved in this browser only.</p>
   </footer>
@@ -667,9 +673,121 @@ const MAPS = {
       [248, 405, 7, "Fineous"], [38, 372, 8, "Bael'Gar"], [38, 398, 9, "Incendius"], [248, 428, 10, "Angerforge"], [38, 496, 11, "Argelmach"],
       [248, 500, 12, "Hurley"], [340, 500, 13, "Phalanx"], [248, 524, 14, "Ribbly", "o"], [340, 524, 15, "Plugger", "o"],
       [616, 503, 16, "Flamelash"], [616, 423, 17, "The Seven"], [458, 423, 18, "Magmus"], [458, 338, 19, "Emperor + Moira", "f"]],
-    notes: [[42, 186, "Kharan's cell"]] }
+    notes: [[42, 186, "Kharan's cell"]],
+    go: [[440, 20, 330, 56, "Blackrock Spire (LBRS / UBRS)", "same mountain, upper path · click to open", "lbrs"]] }
 };
+// Grid sketches. R(col,row,title,sub,marks,opts): opts.w/h = span, opts.k = "w" water | "d" outside/dashed | "g" link to another dungeon, opts.go = dungeon id.
+// marks: route stop names (numbers/flags come from the route), or [name, short label].
+function R(c, r, t, s, m, o) { return Object.assign({ c, r, t, s: s || "", m: m || [], w: 1, h: 1, k: "" }, o || {}); }
+const GRID = {
+  rfc: { guess: 0, rooms: [R(0, 0, "Entrance", "Cleft of Shadow, Orgrimmar"), R(1, 0, "Trogg caves", "", ["Oggleflint"]), R(1, 1, "Lava pit", "", [["Taragaman the Hungerer", "Taragaman"]]), R(2, 1, "Searing Blade den", "", [["Jergosh the Invoker", "Jergosh"], "Bazzalan"])],
+    edges: [[0, 1], [1, 2], [2, 3]] },
+  hot: { guess: 1, rooms: [R(0, 0, "Entrance", "Old Ironforge, under throne"), R(1, 0, "Royal tombs", "ghost dwarf trash", [["Faldrim Anvilmar", "Faldrim"]]), R(2, 0, "Dark Iron dig", "dangerous trash", ["Magmatus"]), R(2, 1, "Guardian hallway", "patrolling boss", ["Plunder"]), R(1, 1, "Central platform", "Dark Iron Looters", [["Durgen Dirgehammer", "Durgen"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+  rol: { guess: 1, rooms: [R(0, 0, "Entrance", "Undercity courtyard"), R(1, 0, "King's Alley", "", ["Witherfang"]), R(2, 0, "Lordaeron Graveyard", "", ["The Baron"]), R(0, 1, "Lordamere Overlook", "chimney to the SW", [["Viktor the Vile", "Viktor"]]), R(1, 1, "Center ruins", "Bjork patrols", ["Bjork", ["Lordaeron Captain", "Captain"]]), R(2, 1, "Market Street", "statue event", [["The Abandoned", "Abandoned"]]), R(1, 2, "Final area", "", ["Rath'mael"])],
+    edges: [[0, 1], [1, 2], [1, 4], [4, 3], [4, 5], [4, 6]], note: "Open layout: bosses can be done in almost any order." },
+  wc: { guess: 0, rooms: [R(0, 0, "Cave mouth", "Nalpak & Ebru on the hill"), R(1, 0, "Anacondra's ledge", "", [["Lady Anacondra", "Anacondra"]]), R(2, 0, "Lagoon", "", ["Kresh", ["Deviate Faerie Dragon", "Faerie Dragon"]], { k: "w" }), R(2, 1, "Fang dens", "", [["Lord Cobrahn", "Cobrahn"], ["Lord Pythas", "Pythas"]]), R(1, 1, "Underwater tunnel", "", ["Skum"], { k: "w" }), R(0, 1, "Serpentis's mound", "top of the waterfall", [["Lord Serpentis", "Serpentis"], ["Verdan the Everliving", "Verdan"]]), R(0, 2, "Naralex's chamber", "talk to the Disciple", [["Disciple of Naralex escort", "Escort event"], ["Mutanus the Devourer", "Mutanus"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]] },
+  sfk: { guess: 0, rooms: [R(0, 0, "Courtyard", "entrance"), R(1, 0, "Prison cells", "Deathstalkers held here", ["Rethilgore"]), R(2, 0, "Kitchen", "", [["Razorclaw the Butcher", "Razorclaw"]]), R(2, 1, "Dining hall", "", [["Baron Silverlaine", "Silverlaine"]]), R(1, 1, "Chapel courtyard", "", [["Commander Springvale", "Springvale"]]), R(0, 1, "Ramparts", "", [["Odo the Blindwatcher", "Odo"]]), R(0, 2, "Lower tower", "", [["Fenrus the Devourer", "Fenrus"]]), R(1, 2, "Upper tower", "", [["Wolf Master Nandos", "Nandos"]]), R(2, 2, "Arugal's chamber", "", [["Archmage Arugal", "Arugal"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]] },
+  bfd: { guess: 0, rooms: [R(0, 0, "Entrance", "Zoram Strand, Ashenvale"), R(1, 0, "Flooded hall", "", ["Ghamoo-ra"], { k: "w" }), R(2, 0, "Sarevess's pool", "", [["Lady Sarevess", "Sarevess"]], { k: "w" }), R(2, 1, "Murloc cave", "", ["Gelihast"]), R(1, 1, "Ruins", "fountain event", [["Lorgus Jett", "Lorgus Jett"], ["Baron Aquanis", "Aquanis"]]), R(0, 1, "Moonshrine sanctum", "light the 4 braziers", [["Twilight Lord Kelris", "Kelris"]]), R(0, 2, "Lower pool", "", [["Old Serra'kis", "Serra'kis"]], { k: "w" }), R(1, 2, "Aku'mai's lair", "", ["Aku'mai"])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]] },
+  stk: { guess: 0, rooms: [R(0, 0, "Entrance", "Stormwind canals"), R(1, 0, "Center hall", "warden's post"), R(2, 0, "East block", "", [["Targorr the Dread", "Targorr"], ["Kam Deepfury", "Kam Deepfury"]]), R(1, 1, "South block", "", ["Hamhock", ["Bazil Thredd", "Bazil Thredd"]]), R(0, 1, "West block", "", [["Dextren Ward", "Dextren"], ["Bruegal Ironknuckle", "Bruegal"]])],
+    edges: [[0, 1], [1, 2], [1, 3], [1, 4]] },
+  exc: { guess: 1, rooms: [R(0, 0, "Mountain path", "meeting stone, Dun Algaz"), R(1, 0, "Crocolisk lake", "", ["Saltspine"], { k: "w" }), R(2, 0, "Raptor path", "tall grass ambushes", ["Shadetooth"]), R(2, 1, "Slime hollow", "Daewyn's body nearby", [["Highland Horror", "Highland Horror"]]), R(1, 1, "Titan dig", "click the panel", [["Relic Guardian", "Relic Guardian"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+  rfk: { guess: 0, rooms: [R(0, 0, "Entrance", "thorn tunnels"), R(1, 0, "Quilboar warrens", "", ["Roogug", ["Aggem Thorncurse", "Aggem"]]), R(2, 0, "Bone pits", "", [["Death Speaker Jargba", "Jargba"], ["Blind Hunter", "Blind Hunter"]]), R(2, 1, "Ramtusk's camp", "", [["Overlord Ramtusk", "Ramtusk"], ["Earthcaller Halmgar", "Halmgar"]]), R(1, 1, "Agathelos's den", "", [["Agathelos the Raging", "Agathelos"]]), R(0, 1, "Charlga's hut", "Willix escort ends here", [["Charlga Razorflank", "Charlga"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+  gno: { guess: 0, rooms: [R(0, 0, "Front entrance", "Dun Morogh"), R(1, 0, "Dormitory", "Kernobee / Blastmaster", ["Grubbis"]), R(2, 0, "Hall of Gears", "", [["Viscous Fallout", "Viscous Fallout"], ["Dark Iron Ambassador", "Ambassador"]]), R(2, 1, "Engineering Labs", "", [["Electrocutioner 6000", "Electrocutioner"]]), R(1, 1, "Launch Bay", "", [["Crowd Pummeler 9-60", "Crowd Pummeler"]]), R(0, 1, "Tinkers' Court", "workshop key shortcut", [["Mekgineer Thermaplugg", "Thermaplugg"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+  dal: { guess: 1, rooms: [R(0, 0, "Sewer gate", "needs Dalaran Sewer Key"), R(0, 1, "Sewers", "", [["Atrexis the Grave Knight", "Atrexis"]]), R(1, 1, "City streets", "Rexxie by the entrance", [["Arcane Anomaly", "Arcane Anomaly"]]), R(1, 0, "Path of Renewal", "NE streets", [["Arcanic Enigma", "Arcanic Enigma"]]), R(2, 0, "Sentinel plaza", "", [["Unstable Sentinel", "Unstable Sentinel"]]), R(2, 1, "Runeweaver Square", "fel overgrowth", [["Fel Ancient", "Fel Ancient"]]), R(1, 2, "Atrium of Fortune", "tome for Lyn", [["Lyn the Ignored", "Lyn"]]), R(2, 2, "Violet Citadel", "clear the room first", [["Mana Devourer", "Mana Devourer"], ["Shade of the Archmage", "Shade"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 7], [2, 6]] },
+  sm: { guess: 0, rooms: [R(1, 0, "Monastery courtyard", "Tirisfal; one door per wing", [], { w: 2 }), R(0, 1, "Graveyard", "", [["Interrogator Vishas", "Vishas"], ["Bloodmage Thalnos", "Thalnos"], "Ironspine", ["Azshir the Sleepless", "Azshir"], ["Fallen Champion", "Fallen Champion"]], { h: 2 }), R(1, 1, "Library", "", [["Houndmaster Loksey", "Loksey"], ["Arcanist Doan", "Doan"]]), R(2, 1, "Armory", "", ["Herod"]), R(3, 1, "Cathedral", "", [["High Inquisitor Fairbanks", "Fairbanks"], ["Scarlet Commander Mograine", "Mograine"], ["High Inquisitor Whitemane", "Whitemane"]])],
+    edges: [[0, 1], [0, 2], [0, 3], [0, 4]], note: "Each wing is its own instance; walk between them through the courtyard." },
+  rfd: { guess: 0, rooms: [R(0, 0, "Entrance", "Barrens / Thousand Needles"), R(1, 0, "Gong room", "ring the gong", ["Tuten'kash"]), R(2, 0, "Bramble paths", "", [["Mordresh Fire Eye", "Mordresh"]]), R(2, 1, "Spiral mounds", "", ["Glutton", ["Plaguemaw the Rotting", "Plaguemaw"], "Ragglesnout"]), R(1, 1, "Idol chamber", "protect Belnistrasz", [["Belnistrasz idol event", "Idol event"]]), R(0, 1, "Amnennar's throne", "", [["Amnennar the Coldbringer", "Amnennar"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+  drc: { guess: 1, rooms: [R(0, 0, "Sunken Hollow", "underwater, west of Grom'gol", [], { k: "w" }), R(1, 0, "Cavern climb", "", ["Zul'Alai"]), R(2, 0, "Central pool", "", ["Var'Taka", ["Primeval Elemental", "Primeval Elemental"], "Umbra"], { k: "w" }), R(2, 1, "Wrecked ship", "Saltseer pirates", [["Captain Dreadrise", "Dreadrise"], "Gill"]), R(1, 1, "Ossuary", "", [["Deathless Marrow", "Deathless Marrow"]]), R(0, 1, "Serpent temple", "", [["Min'loth the Serpent", "Min'loth"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [2, 4], [4, 5]], note: "Big central area with side sections; order is flexible." },
+  uld: { guess: 0, rooms: [R(0, 0, "Entrance", "Badlands dig site"), R(1, 0, "Excavation", "", ["Revelosh", ["Baelog, Eric & Olaf", "Lost dwarves"]]), R(2, 0, "Map room", "Staff of Prehistoria", ["Ironaya"]), R(2, 1, "Hall of the Crafters", "", [["Obsidian Sentinel", "Obsidian Sentinel"], ["Ancient Stone Keeper", "Stone Keeper"]]), R(1, 1, "Forge halls", "", [["Galgann Firehammer", "Galgann"], "Grimlok"]), R(0, 1, "Chamber of Khaz'mul", "Platinum Discs here", ["Archaedas"])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+  krd: { guess: 1, rooms: [R(0, 0, "Riverglades hills", "outside the walls", ["Tunk"], { k: "d" }), R(0, 1, "Portal cave", "W of the gates; key door"), R(1, 1, "Slave mines", "", [["Slavecrusher Grox", "Grox"]]), R(2, 1, "City gates", "Zarmok patrols", [["Twilight Commander Zarmok", "Zarmok"]]), R(2, 0, "War kennels", "", [["War Handler Ashka", "Ashka"]]), R(2, 2, "Twilight camp", "", ["Nar'gurk", ["Zalfan Moonshadow", "Zalfan"]]), R(1, 2, "Great bridge", "brutes keep coming", [["Bossman Toof", "Toof"]]), R(0, 2, "Overlord's keep", "", [["Overlord Mugg", "Mugg"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [3, 5], [5, 6], [6, 7]] },
+  zf: { guess: 0, rooms: [R(0, 0, "Entrance", "Tanaris"), R(1, 0, "Basilisk pit", "", ["Antu'sul"]), R(2, 0, "Temple of Theka", "", [["Theka the Martyr", "Theka"]]), R(2, 1, "Troll graveyard", "", [["Witch Doctor Zum'rah", "Zum'rah"]]), R(1, 1, "Sacred pool", "gong summons Gahz'rilla", [["Hydromancer Velratha", "Velratha"], "Gahz'rilla"], { k: "w" }), R(0, 1, "Pyramid stairs", "Bly's prisoner event", [["Nekrum & Sezz'ziz", "Nekrum & Sezz'ziz"], ["Sergeant Bly", "Bly"]]), R(0, 2, "Pyramid top", "", [["Chief Ukorz Sandscalp", "Ukorz"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]] },
+  mar: { guess: 0, rooms: [R(1, 0, "Outer valley", "Desolace; two entrances"), R(0, 1, "Purple side", "", [["Lord Vyletongue", "Vyletongue"], ["Celebras the Cursed", "Celebras"]]), R(2, 1, "Orange side", "", ["Noxxion", "Razorlash"]), R(1, 2, "Earth Song Falls", "inner Maraudon", ["Landslide", ["Tinkerer Gizlock", "Gizlock"], "Rotgrip"], { k: "w" }), R(1, 3, "Princess's grotto", "", [["Princess Theradras", "Theradras"]])],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4]], note: "Both outer sides lead into the same inner area. The Scepter of Celebras portal skips straight to the inner falls." },
+  st: { guess: 0, rooms: [R(0, 0, "Entrance", "sunken stairs, the swamp"), R(1, 0, "Balcony ring", "6 statue puzzle"), R(2, 0, "Lower pit", "", ["Atal'alarion"]), R(2, 1, "Drake ledges", "", ["Dreamscythe", "Weaver"]), R(1, 1, "Central chamber", "brazier event", [["Avatar of Hakkar", "Avatar of Hakkar"], ["Jammal'an the Prophet", "Jammal'an"], ["Ogom the Wretched", "Ogom"]]), R(0, 1, "Drake hall", "", ["Morphaz", "Hazzas"]), R(0, 2, "Eranikus's lair", "", [["Shade of Eranikus", "Eranikus"]])],
+    edges: [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [5, 6]] },
+  alc: { guess: 1, rooms: [R(0, 0, "Island keep", "portal in the basement"), R(1, 0, "Flooded cells", "", [["Tidemistress Ca'zass", "Ca'zass"]], { k: "w" }), R(2, 0, "Overseer's block", "", [["Overseer Wrex", "Wrex"]]), R(2, 1, "Interrogation", "keep him alive for quests", [["The Questioner", "Questioner"]]), R(1, 1, "Cleaner's hall", "", [["Katerina the Cleaner", "Katerina"]]), R(0, 1, "Warden's tower", "", [["Zarla Ober / Blazeroar", "Zarla / Blazeroar"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+  lbrs: { guess: 0, rooms: [R(0, 0, "Spire entrance", "upper path in the mountain"), R(1, 0, "Hordemar City", "", [["Highlord Omokk", "Omokk"], ["Shadow Hunter Vosh'gajin", "Vosh'gajin"], ["War Master Voone", "Voone"]]), R(2, 0, "Spider tunnels", "", [["Mother Smolderweb", "Smolderweb"], ["Spirestone Butcher", "Spirestone Butcher"], ["Bannok Grimaxe", "Bannok"]]), R(2, 1, "Skitterweb halls", "Urok event (Warosh)", [["Quartermaster Zigris", "Zigris"], ["Urok Doomhowl", "Urok"]]), R(1, 1, "Beast pens", "", ["Halycon", ["Gizrul the Slavener", "Gizrul"]]), R(0, 1, "Dragonspire bridge", "", [["Overlord Wyrmthalak", "Wyrmthalak"]]), R(0, 2, "Upper Blackrock Spire", "needs Seal of Ascension", [], { k: "g", go: "ubrs" }), R(1, 2, "Blackrock Depths", "lower in the mountain", [], { k: "g", go: "brd" })],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [0, 6]] },
+  ubrs: { guess: 0, rooms: [R(0, 0, "Seal door", "in the LBRS entrance hall"), R(1, 0, "Hall of Blackhand", "free him at the altar", [["Pyroguard Emberseer", "Emberseer"]]), R(2, 0, "Rookery", "egg event", [["Solakar Flamewreath", "Solakar"], ["Jed Runewatcher", "Jed"]]), R(2, 1, "Forge", "", [["Goraluk Anvilcrack", "Goraluk"]]), R(1, 1, "Stadium", "waves, then Gyth", [["Warchief Rend Blackhand & Gyth", "Rend & Gyth"]]), R(0, 1, "Beast's den", "", [["The Beast", "The Beast"]]), R(0, 2, "Drakkisath's hall", "Blackwing Lair beyond", [["General Drakkisath", "Drakkisath"]]), R(1, 2, "Lower Blackrock Spire", "back through the seal door", [], { k: "g", go: "lbrs" })],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [0, 7]] },
+  bmh: { guess: 1, rooms: [R(0, 0, "Furbolg gate", "northern Azshara"), R(1, 0, "Lower grove", "", ["Withermaw"]), R(1, 1, "Hill path (right)", "interrupt his casts", [["Impaan the Imprisoner", "Impaan"]]), R(2, 0, "Shaman's grove", "", [["Elder Shaman Bloodmane", "Bloodmane"]]), R(2, 1, "Bone pit", "", [["Bonesnout the Unbroken", "Bonesnout"]]), R(2, 2, "Corrupted heart", "", [["Varrox Bleakhoof", "Varrox"]]), R(0, 1, "Side tunnels", "optional", [["Blackmaw Behemoth", "Behemoth"], ["Unbound Spirit", "Unbound Spirit"]]), R(1, 2, "Barrow Deeps (raid)", "tunnels continue on", [], { k: "d" })],
+    edges: [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [1, 6], [5, 7]], note: "Several routes through the hold; boss order and placement are guesses." },
+  dmw: { guess: 0, rooms: [R(1, 0, "Courtyard", "Crescent Key: West & North"), R(0, 1, "East: Warpwood Quarter", "", ["Pusillin", ["Zevrim Thornhoof", "Zevrim"], "Hydrospawn"]), R(0, 2, "East: inner grove", "Ironbark opens the gate", ["Lethtendris", ["Old Ironbark", "Ironbark"], ["Alzzin the Wildshaper", "Alzzin"]]), R(1, 1, "West: Capital Gardens", "", [["Tendris Warpwood", "Tendris"], ["Illyanna Ravenoak", "Illyanna"], ["Magister Kalendris", "Kalendris"]]), R(1, 2, "West: Court of the Highborne", "5 pylons", [["Immol'thar", "Immol'thar"], ["Prince Tortheldrin", "Tortheldrin"]]), R(2, 1, "North: Gordok Commons", "", [["Guard Mol'dar", "Mol'dar"], ["Stomper Kreeg", "Kreeg"], ["Guard Fengus", "Fengus"]]), R(2, 2, "North: inner halls", "", [["Guard Slip'kik", "Slip'kik"], ["Captain Kromcrush", "Kromcrush"], ["Cho'Rush the Observer", "Cho'Rush"]]), R(2, 3, "North: throne room", "", [["King Gordok", "King Gordok"]])],
+    edges: [[0, 1], [1, 2], [0, 3], [3, 4], [0, 5], [5, 6], [6, 7]], note: "Three wings off one courtyard; East also has its own back entrance." },
+  sha: { guess: 1, rooms: [R(0, 0, "Terrace stairs", "above Marshal's Refuge"), R(1, 0, "Console hall", "use power crystals", ["Cinder"]), R(2, 0, "Frost exhibit", "", ["Snowtalon"]), R(2, 1, "Storm exhibit", "", ["Bolt"]), R(1, 1, "Titan vault", "", ["Vitrix"]), R(0, 1, "Shaper's crown", "", ["Nanaya"]), R(0, 2, "Wild terraces", "optional", ["Titanosaur", "Tor'Rel", "Venomridge", "Thunderhoof", ["Direhorn Matriarch", "Direhorn Matriarch"]], { w: 3 })],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [1, 6]] },
+  sch: { guess: 0, rooms: [R(0, 0, "Entrance", "Caer Darrow; Skeleton Key"), R(1, 0, "Reliquary", "brazier summons him", [["Kirtonos the Herald", "Kirtonos"]]), R(2, 0, "Great Ossuary", "", [["Jandice Barov", "Jandice"], "Rattlegore"]), R(2, 1, "Viewing Room", "", [["Marduk Blackpool", "Marduk"], "Vectus"]), R(1, 1, "Laboratory", "", [["Ras Frostwhisper", "Ras Frostwhisper"]]), R(0, 1, "Classrooms (west)", "", [["Instructor Malicia", "Malicia"], ["Doctor Theolen Krastinov", "Krastinov"], ["Lorekeeper Polkelt", "Polkelt"]]), R(0, 2, "Classrooms (east)", "", [["The Ravenian", "Ravenian"], ["Lord Alexei Barov", "Alexei"], ["Lady Illucia Barov", "Illucia"]]), R(1, 2, "Headmaster's study", "after all six", [["Darkmaster Gandling", "Gandling"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]] },
+  str: { guess: 0, rooms: [R(0, 0, "Main Gate", "Live side, King's Square"), R(1, 0, "Festival Lane", "", [["Fras Siabi", "Fras Siabi"], "Skul"]), R(2, 0, "Market Row", "", [["The Unforgiven", "Unforgiven"], ["Timmy the Cruel", "Timmy"], ["Hearthsinger Forresten", "Forresten"]]), R(2, 1, "Crusaders' Square", "", [["Cannon Master Willey", "Willey"], ["Archivist Galford", "Galford"]]), R(2, 2, "Scarlet bastion", "", ["Balnazzar"]), R(0, 1, "Service Gate", "Undead side"), R(1, 1, "Elders' Square", "gate links both sides", [["Magistrate Barthilas", "Barthilas"]]), R(1, 2, "Ziggurats", "", [["Nerub'enkan", "Nerub'enkan"], ["Baroness Anastari", "Anastari"], ["Maleki the Pallid", "Maleki"]]), R(0, 2, "Slaughterhouse", "", [["Ramstein the Gorger", "Ramstein"], ["Baron Rivendare", "Rivendare"]])],
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [5, 6], [6, 7], [7, 8], [1, 6]], note: "One instance with two gates; the two sides connect inside." }
+};
+function stopInfo(id) {
+  const d = D.find(x => x.id === id), out = {};
+  let n = 0;
+  d.route.forEach(w => w.stops.forEach(([name, fl = ""]) => { out[name] = { n: fl.includes("r") ? "R" : String(++n), fl }; }));
+  return out;
+}
+function markSVG(x, y, num, label, fl) {
+  const opt = fl.includes("o"), rare = fl.includes("r"), fin = fl.includes("f");
+  return '<circle class="mk' + (fin ? " mf" : "") + (opt ? " mo" : "") + (rare ? " mrr" : "") + '" cx="' + x + '" cy="' + y + '" r="9"/>' +
+    '<text class="mn' + (opt ? " mno" : "") + '" x="' + x + '" y="' + (y + 4) + '" text-anchor="middle">' + num + '</text>' +
+    '<text class="ml" x="' + (x + 14) + '" y="' + (y + 4) + '">' + esc(label) + '</text>';
+}
+function legendSVG(y) {
+  return '<circle class="mk" cx="30" cy="' + y + '" r="7"/><text class="ml" x="42" y="' + (y + 4) + '">Boss</text>' +
+    '<circle class="mk mf" cx="100" cy="' + y + '" r="7"/><text class="ml" x="112" y="' + (y + 4) + '">Final boss</text>' +
+    '<circle class="mk mo" cx="200" cy="' + y + '" r="7"/><text class="ml" x="212" y="' + (y + 4) + '">Optional</text>' +
+    '<circle class="mk mrr" cx="290" cy="' + y + '" r="7"/><text class="ml" x="302" y="' + (y + 4) + '">Rare</text>' +
+    '<path class="mc" d="M360 ' + y + ' L395 ' + y + '"/><text class="ml" x="404" y="' + (y + 4) + '">Path</text>' +
+    '<rect class="mg" x="455" y="' + (y - 8) + '" width="28" height="16" rx="3"/><text class="ml" x="491" y="' + (y + 4) + '">Connected dungeon (click)</text>';
+}
+function gridSVG(id) {
+  const g = GRID[id], info = stopInfo(id);
+  const CX = 200, CY = 140, PW = 180, PH = 120;
+  const box = r => ({ x: 20 + r.c * CX, y: 20 + r.r * CY, w: PW * r.w + 20 * (r.w - 1), h: PH * r.h + 20 * (r.h - 1) });
+  const cols = Math.max(...g.rooms.map(r => r.c + r.w)), rows = Math.max(...g.rooms.map(r => r.r + r.h));
+  const W = Math.max(20 + cols * CX, 700), H = 20 + rows * CY;
+  let o = '<svg viewBox="0 0 ' + W + ' ' + (H + 30) + '" role="img" aria-label="Approximate layout sketch of ' + esc(D.find(d => d.id === id).name) + '">';
+  o += g.edges.map(([a, b]) => {
+    const A = box(g.rooms[a]), B = box(g.rooms[b]);
+    const ax = A.x + A.w / 2, ay = A.y + A.h / 2, bx = B.x + B.w / 2, by = B.y + B.h / 2;
+    return '<path class="mc" d="M' + ax + ' ' + ay + ' L' + bx + ' ' + ay + ' L' + bx + ' ' + by + '"/>';
+  }).join("");
+  g.rooms.forEach(r => {
+    const b = box(r), go = r.k === "g";
+    const cls = r.k === "w" ? "mr mwr" : r.k === "d" ? "mr md" : go ? "mr mg" : "mr";
+    if (go) o += '<g class="mgo" data-go="' + r.go + '" tabindex="0" role="link" aria-label="Open ' + esc(r.t) + '">';
+    o += '<rect class="' + cls + '" x="' + b.x + '" y="' + b.y + '" width="' + b.w + '" height="' + b.h + '" rx="6"/>';
+    o += '<text class="mt" x="' + (b.x + b.w / 2) + '" y="' + (b.y + 18) + '" text-anchor="middle">' + esc((go ? "→ " : "") + r.t) + '</text>';
+    if (r.s) o += '<text class="ms" x="' + (b.x + b.w / 2) + '" y="' + (b.y + 34) + '" text-anchor="middle">' + esc(r.s) + '</text>';
+    if (go) o += '<text class="ms" x="' + (b.x + b.w / 2) + '" y="' + (b.y + 60) + '" text-anchor="middle">click to open it</text></g>';
+    const ncol = Math.min(r.w, 3), colw = b.w / ncol, y0 = b.y + (r.s ? 56 : 44);
+    r.m.forEach((m, i) => {
+      const [name, short] = Array.isArray(m) ? m : [m, m];
+      const si = info[name] || { n: "?", fl: "" };
+      const col = i % ncol, row = Math.floor(i / ncol);
+      o += markSVG(b.x + 20 + col * colw, y0 + row * 23, si.n, short, si.fl);
+    });
+  });
+  return o + legendSVG(H + 14) + "</svg>";
+}
+function hasMap(id) { return !!(MAPS[id] || GRID[id]); }
 function mapSVG(id) {
+  if (GRID[id]) return gridSVG(id);
   const m = MAPS[id];
   if (!m) return "";
   const room = ([x, y, w, h, t, s = "", fl = ""]) => {
@@ -679,7 +797,7 @@ function mapSVG(id) {
       '<text class="mt" x="' + tx + '" y="' + (y + 16) + '" text-anchor="' + anchor + '">' + esc(t) + '</text>' +
       (s ? '<text class="ms" x="' + tx + '" y="' + (y + 32) + '" text-anchor="' + anchor + '">' + esc(s) + '</text>' : "");
   };
-  let o = '<svg viewBox="0 0 ' + m.w + ' ' + (m.h + 34) + '" role="img" aria-label="Approximate layout sketch of ' + esc(D.find(d => d.id === id).name) + '">';
+  let o = '<svg viewBox="0 0 ' + Math.max(m.w, 700) + ' ' + (m.h + 34) + '" role="img" aria-label="Approximate layout sketch of ' + esc(D.find(d => d.id === id).name) + '">';
   o += (m.paths || []).map(p => '<path class="mc" d="' + p + '"/>').join("");
   o += (m.rooms || []).map(room).join("");
   o += (m.water || []).map(([x, y, w, h]) => '<rect class="mw" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8"/>').join("");
@@ -689,11 +807,8 @@ function mapSVG(id) {
   o += (m.marks || []).map(([x, y, n, l, fl = ""]) => '<circle class="mk' + (fl.includes("f") ? " mf" : "") + (fl.includes("o") ? " mo" : "") + '" cx="' + x + '" cy="' + y + '" r="9"/>' +
     '<text class="mn' + (fl.includes("o") ? " mno" : "") + '" x="' + x + '" y="' + (y + 4) + '" text-anchor="middle">' + n + '</text>' +
     '<text class="ml" x="' + (x + 14) + '" y="' + (y + 4) + '">' + esc(l) + '</text>').join("");
-  const ly = m.h + 18;
-  o += '<circle class="mk" cx="30" cy="' + ly + '" r="7"/><text class="ml" x="42" y="' + (ly + 4) + '">Boss</text>' +
-    '<circle class="mk mf" cx="100" cy="' + ly + '" r="7"/><text class="ml" x="112" y="' + (ly + 4) + '">Final boss</text>' +
-    '<circle class="mk mo" cx="200" cy="' + ly + '" r="7"/><text class="ml" x="212" y="' + (ly + 4) + '">Optional</text>' +
-    '<path class="mc" d="M290 ' + ly + ' L330 ' + ly + '"/><text class="ml" x="340" y="' + (ly + 4) + '">Path</text>';
+  o += (m.go || []).map(([x, y, w, h, t, sub, go]) => '<g class="mgo" data-go="' + go + '" tabindex="0" role="link" aria-label="Open ' + esc(t) + '"><rect class="mr mg" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="6"/><text class="mt" x="' + (x + w / 2) + '" y="' + (y + 18) + '" text-anchor="middle">→ ' + esc(t) + '</text><text class="ms" x="' + (x + w / 2) + '" y="' + (y + 34) + '" text-anchor="middle">' + esc(sub) + '</text></g>').join("");
+  o += legendSVG(m.h + 18);
   return o + "</svg>";
 }
 function routeHTML(d) {
@@ -850,12 +965,17 @@ function renderAll() {
       '<div class="status"><span class="pill ' + ev.s + '">' + ev.label + '</span>' + ev.why.map(w => '<span class="why">' + esc(w) + '</span>').join("") +
         '<button type="button" class="dbtn" aria-expanded="' + (state.open[d.id] ? "true" : "false") + '" aria-controls="det-' + d.id + '">Route &amp; quests · ' + qc.done + '/' + qc.total + '</button></div>' +
       (state.open[d.id] ? '<div class="details" id="det-' + d.id + '">' +
-        '<div class="mapwrap"><h4>Map <small>' + (MAPS[d.id] ? "rough layout sketch, not to scale; numbers match the route" : "sketch not drawn yet") +
+        '<div class="mapwrap"><h4>Map <small>' + (hasMap(d.id) ? "rough layout sketch, not to scale; numbers match the route" : "sketch not drawn yet") +
           (LINKS[d.id] ? ' · <a href="' + LINKS[d.id][1] + '" target="_blank" rel="noopener">Full map on ' + LINKS[d.id][0] + ' ↗</a>' : "") + '</small></h4>' +
-          (MAPS[d.id] ? '<div class="map">' + mapSVG(d.id) + '</div>' : "") + '</div>' +
+          (hasMap(d.id) ? '<div class="map">' + mapSVG(d.id) + '</div>' : "") + (GRID[d.id] && (GRID[d.id].guess || GRID[d.id].note) ? '<p class="dnote">' + esc([GRID[d.id].guess ? "New dungeon: layout guessed from guide descriptions; use the full map link for the real thing." : "", GRID[d.id].note || ""].filter(Boolean).join(" ")) + '</p>' : "") + '</div>' +
         '<div><h4>Route <small>approximate boss order</small></h4>' + routeHTML(d) + '</div>' +
         '<div><h4>Quests <small>' + qc.done + ' of ' + qc.total + ' done</small></h4>' + questsHTML(d) + '</div></div>' : "");
     list.appendChild(row);
+    row.querySelectorAll("[data-go]").forEach(el => {
+      const go = () => { const t = el.dataset.go; state.open[t] = true; save(); renderAll(); const r = document.getElementById("row-" + t); if (r) { r.scrollIntoView({ block: "start" }); r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 1400); } };
+      el.addEventListener("click", go);
+      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
     row.querySelector(".dbtn").addEventListener("click", () => {
       if (state.open[d.id]) delete state.open[d.id]; else state.open[d.id] = true;
       save(); renderAll();
