@@ -166,6 +166,22 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
 .quests li.qdone .qn { text-decoration: line-through; color: var(--muted); }
 .qtag { font-size: 10.5px; font-weight: 600; padding: 0 5px; border-radius: 4px; margin-left: 5px; background: var(--track); color: var(--muted); vertical-align: 1px; }
 .qtag.in { background: var(--info-soft); color: var(--info); }
+.mapwrap { grid-column: 1 / -1; }
+.mapwrap a { color: var(--accent); }
+.map { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 8px; }
+.map svg { display: block; width: 100%; min-width: 560px; height: auto; font-family: var(--font-body); }
+.map .mr { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+.map .md { fill: none; stroke: var(--muted); stroke-dasharray: 5 4; }
+.map .mw { fill: var(--info-soft); stroke: var(--info); stroke-width: .6; }
+.map .mc { fill: none; stroke: var(--track); stroke-width: 9; stroke-linecap: round; }
+.map .mt { fill: var(--ink); font-size: 12.5px; font-weight: 600; }
+.map .ms, .map .ml { fill: var(--muted); font-size: 12px; }
+.map .ml { fill: var(--ink); }
+.map .mk { fill: var(--range); stroke: var(--panel); stroke-width: 1.5; }
+.map .mk.mf { fill: var(--accent); }
+.map .mk.mo { fill: var(--panel); stroke: var(--muted); stroke-dasharray: 3 2; }
+.map .mn { fill: var(--panel); font: 600 10.5px var(--font-mono); }
+.map .mn.mno { fill: var(--muted); }
 .dnote { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
 .foot { font-size: 12.5px; color: var(--muted); max-width: 80ch; }
 .foot p { margin: 4px 0; }
@@ -231,6 +247,7 @@ input:focus-visible, button:focus-visible, .check:focus-within { outline: 2px so
   <footer class="foot">
     <p><strong>How status works.</strong> No one gets kill XP from an enemy when anyone in the party is 13 or more levels above it (Blizzard hotfix, Nov 14 2026). Gray uses the Classic formula against your highest member. "Underleveled" means someone is more than 4 levels below the best level.</p>
     <p><strong>Data.</strong> For the 9 new dungeons, enemy ranges are Blizzard's announced ranges plus recorded boss levels. For the original 20, enemy levels are the original Classic values; Forever has changed these dungeons, so treat them as ±1–2. Best level = a few levels above the lowest enemy, so trash stays green while the last bosses are still beatable.</p>
+    <p><strong>Maps.</strong> Layout sketches are original rough drawings, not copies of the in-game maps and not to scale; use the "Full map" links for the real thing. Sketches so far: Blackrock Depths and the Deadmines.</p>
     <p><strong>Routes and quests.</strong> Routes are boss-order schematics, not to-scale maps; wings are drawn as separate lines. For the new dungeons they come from community guides (Method, Warcraft Tavern, Frostyboost, gfinity), and Blackmaw Hold's order is still unconfirmed. Original-dungeon routes and quests are the Classic versions; Forever reworked dungeon quests, so expect some additions or name changes. Quests shown follow the faction you picked.</p>
     <p>Your party, cleared dungeons and quest checkmarks are saved in this browser only.</p>
   </footer>
@@ -620,6 +637,65 @@ function questCount(d) {
   const qs = myQuests(d);
   return { total: qs.length, done: qs.filter(q => state.q[q.key]).length };
 }
+const LINKS = {
+  brd: ["Warcraft Tavern", "https://www.warcrafttavern.com/forever/guides/blackrock-depths/"],
+  hot: ["Method", "https://www.method.gg/wow-forever/dungeons/hall-of-thanes"],
+  rol: ["Method", "https://www.method.gg/wow-forever/dungeons/ruins-of-lordaeron"],
+  exc: ["Method", "https://www.method.gg/wow-forever/dungeons/excavation-site-wetlands"],
+  dal: ["Warcraft Tavern", "https://www.warcrafttavern.com/forever/guides/city-of-dalaran/"],
+  drc: ["Method", "https://www.method.gg/wow-forever/dungeons/the-drowned-city"],
+  krd: ["Method", "https://www.method.gg/wow-forever/dungeons/kroldok-stronghold"],
+  alc: ["Method", "https://www.method.gg/wow-forever/dungeons/alcaz-prison"],
+  bmh: ["Warcraft Tavern", "https://www.warcrafttavern.com/forever/guides/blackmaw-hold/"],
+  sha: ["Warcraft Tavern", "https://www.warcrafttavern.com/forever/guides/shapers-terrace/"]
+};
+// Layout sketches: original approximations, not to scale. rooms [x,y,w,h,title,sub,flags(d=dashed,l=left title)], rings [cx,cy,r,title], water [x,y,w,h], paths [svg d], marks [x,y,num,label,flags(f=final,o=optional)]
+const MAPS = {
+  dm: { w: 680, h: 580,
+    paths: ["M115 90 L115 140", "M210 180 L250 180", "M430 180 L470 180", "M555 230 L555 280", "M555 330 L555 370", "M455 460 L390 490"],
+    rooms: [[40, 40, 150, 50, "Entrance", "Moonbrook house"], [40, 140, 170, 80, "Kobold mine"], [250, 130, 180, 100, "Goblin lumber mill"], [470, 130, 170, 100, "Foundry"], [470, 280, 170, 50, "Cannon door", "blast it open"], [40, 370, 600, 200, "Ironclad Cove", "", "dl"]],
+    water: [[60, 440, 360, 118]],
+    rooms2: [[100, 462, 290, 80, "Defias ship", "", "l"], [430, 420, 190, 40, "Dock", "", "l"]],
+    marks: [[70, 195, 1, "Rhahk'Zor"], [280, 195, 2, "Sneed's Shredder"], [500, 195, 3, "Gilnid"], [520, 440, 4, "Mr. Smite"], [130, 515, 5, "Greenskin"], [262, 500, 6, "VanCleef", "f"], [262, 526, 7, "Cookie", "o"]] },
+  brd: { w: 790, h: 560,
+    paths: ["M85 66 L85 110", "M190 150 L230 150", "M325 180 L320 213", "M375 260 L440 235", "M590 235 L600 240", "M320 307 L315 360", "M230 395 L190 380", "M105 420 L105 450", "M315 440 L330 460", "M430 500 L460 495", "M590 495 L598 495", "M686 470 L686 440", "M600 415 L580 415", "M510 390 L510 356"],
+    rooms: [[20, 20, 130, 46, "Entrance", "from Blackrock Mtn"], [20, 110, 170, 90, "Detention Block"], [230, 120, 200, 60, "Dark Iron Highway"], [440, 200, 150, 60, "Shrine of Thaurissan"], [600, 200, 150, 80, "Black Vault"],
+      [20, 330, 170, 90, "Black Forge"], [230, 360, 170, 80, "Hall of Crafting"], [20, 450, 170, 70, "Manufactory"], [230, 460, 200, 80, "Grim Guzzler"], [460, 470, 130, 50, "Lyceum", "light the braziers"],
+      [598, 470, 176, 50, "Chamber of Enchantment"], [598, 390, 176, 50, "Summoners' Tomb"], [440, 390, 140, 50, "Iron Hall"], [440, 300, 160, 56, "Imperial Seat"]],
+    rings: [[320, 260, 47, "Ring of Law"]],
+    marks: [[42, 160, 1, "Gerstahn"], [250, 160, 2, "Roccor"], [340, 160, 3, "Grebmar"], [320, 280, 4, "Arena"], [458, 240, 5, "Loregrain"], [618, 250, 6, "Stilgiss"],
+      [248, 405, 7, "Fineous"], [38, 372, 8, "Bael'Gar"], [38, 398, 9, "Incendius"], [248, 428, 10, "Angerforge"], [38, 496, 11, "Argelmach"],
+      [248, 500, 12, "Hurley"], [340, 500, 13, "Phalanx"], [248, 524, 14, "Ribbly", "o"], [340, 524, 15, "Plugger", "o"],
+      [616, 503, 16, "Flamelash"], [616, 423, 17, "The Seven"], [458, 423, 18, "Magmus"], [458, 338, 19, "Emperor + Moira", "f"]],
+    notes: [[42, 186, "Kharan's cell"]] }
+};
+function mapSVG(id) {
+  const m = MAPS[id];
+  if (!m) return "";
+  const room = ([x, y, w, h, t, s = "", fl = ""]) => {
+    const left = fl.includes("l");
+    const tx = left ? x + 12 : x + w / 2, anchor = left ? "start" : "middle";
+    return '<rect class="mr' + (fl.includes("d") ? " md" : "") + '" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="6"/>' +
+      '<text class="mt" x="' + tx + '" y="' + (y + 16) + '" text-anchor="' + anchor + '">' + esc(t) + '</text>' +
+      (s ? '<text class="ms" x="' + tx + '" y="' + (y + 32) + '" text-anchor="' + anchor + '">' + esc(s) + '</text>' : "");
+  };
+  let o = '<svg viewBox="0 0 ' + m.w + ' ' + (m.h + 34) + '" role="img" aria-label="Approximate layout sketch of ' + esc(D.find(d => d.id === id).name) + '">';
+  o += (m.paths || []).map(p => '<path class="mc" d="' + p + '"/>').join("");
+  o += (m.rooms || []).map(room).join("");
+  o += (m.water || []).map(([x, y, w, h]) => '<rect class="mw" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8"/>').join("");
+  o += (m.rooms2 || []).map(room).join("");
+  o += (m.rings || []).map(([cx, cy, r, t]) => '<circle class="mr" cx="' + cx + '" cy="' + cy + '" r="' + r + '"/><text class="mt" x="' + cx + '" y="' + (cy - 12) + '" text-anchor="middle">' + esc(t) + '</text>').join("");
+  o += (m.notes || []).map(([x, y, t]) => '<text class="ms" x="' + x + '" y="' + y + '">' + esc(t) + '</text>').join("");
+  o += (m.marks || []).map(([x, y, n, l, fl = ""]) => '<circle class="mk' + (fl.includes("f") ? " mf" : "") + (fl.includes("o") ? " mo" : "") + '" cx="' + x + '" cy="' + y + '" r="9"/>' +
+    '<text class="mn' + (fl.includes("o") ? " mno" : "") + '" x="' + x + '" y="' + (y + 4) + '" text-anchor="middle">' + n + '</text>' +
+    '<text class="ml" x="' + (x + 14) + '" y="' + (y + 4) + '">' + esc(l) + '</text>').join("");
+  const ly = m.h + 18;
+  o += '<circle class="mk" cx="30" cy="' + ly + '" r="7"/><text class="ml" x="42" y="' + (ly + 4) + '">Boss</text>' +
+    '<circle class="mk mf" cx="100" cy="' + ly + '" r="7"/><text class="ml" x="112" y="' + (ly + 4) + '">Final boss</text>' +
+    '<circle class="mk mo" cx="200" cy="' + ly + '" r="7"/><text class="ml" x="212" y="' + (ly + 4) + '">Optional</text>' +
+    '<path class="mc" d="M290 ' + ly + ' L330 ' + ly + '"/><text class="ml" x="340" y="' + (ly + 4) + '">Path</text>';
+  return o + "</svg>";
+}
 function routeHTML(d) {
   const qs = myQuests(d);
   let n = 0;
@@ -773,7 +849,11 @@ function renderAll() {
         '</div><div class="lv">Enemies ' + d.min + '–' + d.max + ' · best <b>' + d.best + '</b></div></div>' +
       '<div class="status"><span class="pill ' + ev.s + '">' + ev.label + '</span>' + ev.why.map(w => '<span class="why">' + esc(w) + '</span>').join("") +
         '<button type="button" class="dbtn" aria-expanded="' + (state.open[d.id] ? "true" : "false") + '" aria-controls="det-' + d.id + '">Route &amp; quests · ' + qc.done + '/' + qc.total + '</button></div>' +
-      (state.open[d.id] ? '<div class="details" id="det-' + d.id + '"><div><h4>Route <small>approximate boss order</small></h4>' + routeHTML(d) + '</div>' +
+      (state.open[d.id] ? '<div class="details" id="det-' + d.id + '">' +
+        '<div class="mapwrap"><h4>Map <small>' + (MAPS[d.id] ? "rough layout sketch, not to scale; numbers match the route" : "sketch not drawn yet") +
+          (LINKS[d.id] ? ' · <a href="' + LINKS[d.id][1] + '" target="_blank" rel="noopener">Full map on ' + LINKS[d.id][0] + ' ↗</a>' : "") + '</small></h4>' +
+          (MAPS[d.id] ? '<div class="map">' + mapSVG(d.id) + '</div>' : "") + '</div>' +
+        '<div><h4>Route <small>approximate boss order</small></h4>' + routeHTML(d) + '</div>' +
         '<div><h4>Quests <small>' + qc.done + ' of ' + qc.total + ' done</small></h4>' + questsHTML(d) + '</div></div>' : "");
     list.appendChild(row);
     row.querySelector(".dbtn").addEventListener("click", () => {
